@@ -12,6 +12,8 @@ export interface Config {
   adminPassword: string | null;
   immichUrl: string | null;
   immichPublicUrl: string | null;
+  /** Public base URL of Fotodruck (for the OAuth callback); default: from the request */
+  publicUrl: string | null;
   uploadMaxMb: number;
   uploadRetentionDays: number;
   cupsUrl: string | null;
@@ -70,6 +72,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     adminPassword: env.ADMIN_PASSWORD || null,
     immichUrl,
     immichPublicUrl: url('IMMICH_PUBLIC_URL', env, ['http:', 'https:']) ?? immichUrl,
+    publicUrl: url('PUBLIC_URL', env, ['http:', 'https:']),
     uploadMaxMb: int('UPLOAD_MAX_MB', 100, 1, 2048, env),
     uploadRetentionDays: int('UPLOAD_RETENTION_DAYS', 7, 0, 36500, env),
     cupsUrl: url('CUPS_URL', env, ['ipp:', 'ipps:', 'http:', 'https:']),

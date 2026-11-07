@@ -200,6 +200,10 @@
         <button class="danger" onclick={unlinkImmich}>{t('settings.immichUnlink')}</button>
       {:else}
         {#if immich?.linked}<p class="error-text">{errorText('immich.credentialInvalid')}</p>{/if}
+        {#if app.config?.oauth?.enabled}
+          <a class="btn primary" href="/api/auth/oauth/start?mode=link">{t('settings.oauthLink', { button: app.config.oauth.buttonText })}</a>
+          <p class="muted small">{t('login.or')}</p>
+        {/if}
         <div class="tabs">
           <button class:active={linkMethod === 'password'} onclick={() => (linkMethod = 'password')}>{t('login.withPassword')}</button>
           <button class:active={linkMethod === 'apikey'} onclick={() => (linkMethod = 'apikey')}>{t('login.withApiKey')}</button>

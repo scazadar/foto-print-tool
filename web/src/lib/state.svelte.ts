@@ -21,6 +21,7 @@ export interface PublicConfig {
   uploadRetentionDays: number;
   testedImmichApi: string;
   loggedIn: boolean;
+  oauth: { enabled: boolean; buttonText: string; passwordLogin: boolean };
 }
 
 export interface User {

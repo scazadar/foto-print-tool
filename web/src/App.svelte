@@ -4,7 +4,8 @@
   import { onMount } from 'svelte';
   import { setUnauthorizedHandler } from './lib/api';
   import { t } from './lib/i18n';
-  import { app, loadSession } from './lib/state.svelte';
+  import { errorText } from './lib/i18n';
+  import { app, loadSession, toast } from './lib/state.svelte';
   import Header from './components/Header.svelte';
   import Footer from './components/Footer.svelte';
   import About from './components/About.svelte';
@@ -24,6 +25,15 @@
         loadSession().catch(() => undefined);
       }
     });
+    // result of an OAuth round trip (?oauth_error=… / ?oauth_linked=1)
+    const params = new URLSearchParams(location.search);
+    const oauthError = params.get('oauth_error');
+    if (oauthError) toast(errorText(oauthError), 'error');
+    if (params.get('oauth_linked')) {
+      toast(t('settings.oauthLinked'));
+      app.view = 'settings';
+    }
+    if (oauthError || params.get('oauth_linked')) history.replaceState(null, '', location.pathname);
     loadSession().catch(() => (loadError = true));
   });
 </script>

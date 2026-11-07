@@ -18,6 +18,7 @@ services:
       IMMICH_PUBLIC_URL: https://fotos.example.de
       CUPS_URL: ipp://cups:631          # CUPS über das gemeinsame Netz "print"
       TRUST_PROXY: "true"               # HTTPS kommt von Traefik
+      PUBLIC_URL: https://druck.example.de   # für die OAuth-Rückruf-Adresse (in Authentik als Redirect-URI eintragen)
       UPLOAD_RETENTION_DAYS: 7
       TZ: Europe/Berlin
     volumes:

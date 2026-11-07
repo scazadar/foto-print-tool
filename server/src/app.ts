@@ -14,6 +14,7 @@ import { SecretBox } from './crypto.js';
 import { type DB, getAppSetting } from './db.js';
 import { ImmichError, TESTED_IMMICH_API } from './immich.js';
 import { registerImmichRoutes } from './immich-routes.js';
+import { immichOAuthInfo, registerOAuthRoutes } from './oauth.js';
 import { registerOutputRoutes } from './output.js';
 import { registerPrintRoutes } from './print.js';
 import { registerSettingsRoutes } from './settings.js';
@@ -90,9 +91,11 @@ export async function buildApp(config: Config, db: DB, opts: { logger?: boolean 
     uploadRetentionDays: config.uploadRetentionDays,
     testedImmichApi: TESTED_IMMICH_API,
     loggedIn: !!req.user,
+    oauth: await immichOAuthInfo(ctx),
   }));
 
   registerAuthRoutes(app, ctx);
+  registerOAuthRoutes(app, ctx);
   registerSettingsRoutes(app, ctx);
   registerUploadRoutes(app, ctx);
   registerImmichRoutes(app, ctx);

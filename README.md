@@ -62,6 +62,7 @@ Getestet gegen die Immich-API **3.4.0-rc.0** (OpenAPI-Spezifikation aus `immich-
 | `PORT` | nein | `8080` | HTTP-Port |
 | `SOURCE_URL` | nein | Link zum Repo | Quellcode-Link in der Oberfläche (AGPL §13). Standard: offizielles Repo |
 | `TRUST_PROXY` | nein | `true` | Hinter einem Reverse Proxy setzen, damit HTTPS erkannt wird |
+| `PUBLIC_URL` | nein | `https://druck.example.de` | Öffentliche Adresse von Fotodruck, für die OAuth-Rückruf-Adresse. Standard: aus der Anfrage (mit `TRUST_PROXY` hinter einem Proxy) |
 | `DATA_DIR` | nein | `/data` | Datenverzeichnis (SQLite, Uploads, Cache) |
 
 Daten: SQLite (`/data/fotodruck.sqlite`) für Konten, Einstellungen, eigene Formate und Druckaufträge; Uploads unter `/data/uploads/<nutzer>/`; Immich-Originale werden für das Rendern höchstens 24 h unter `/data/cache/<nutzer>/` zwischengespeichert. Gerenderte Ergebnisse werden nicht gespeichert, sondern direkt ausgeliefert.
@@ -72,11 +73,28 @@ Das Sitzungscookie ist immer `HttpOnly` und `SameSite=Lax`. Das `Secure`-Flag wi
 
 ## Immich: Anmeldung und API-Key
 
+- **OAuth/SSO** (z. B. Authentik, Authelia, Keycloak): Ist in Immich OAuth aktiviert, zeigt die Anmeldeseite einen Button mit dem Text aus Immich, etwa „Login with OAuth“. Fotodruck nutzt dafür den OAuth-Zugang von Immich, so wie die Immich-App: Immich erzeugt die Anmeldeadresse beim Anbieter und tauscht danach den Code gegen ein Immich-Token. Beim Anbieter ist **kein eigener Client** nötig, nur eine zusätzliche Redirect-URI, siehe [OAuth mit Authentik](#oauth-mit-authentik). Im Modus `AUTH_MODE=local` können Nutzer ihr Immich-Konto in den Einstellungen ebenfalls per OAuth verbinden.
 - **Immich-Passwort:** E-Mail und Passwort des Immich-Kontos. Das Backend erhält ein Access-Token von `POST /api/auth/login`; beim Abmelden wird es mit `POST /api/auth/logout` beendet.
 - **Persönlicher API-Key** (für Immich-Instanzen mit reiner OAuth/SSO-Anmeldung): In Immich unter *Kontoeinstellungen → API-Schlüssel → Neuer API-Schlüssel* einen Schlüssel erzeugen. Benötigte Rechte:
   `asset.read`, `asset.view`, `asset.download`, `asset.upload`, `asset.update`, `album.read`, `album.create`, `albumAsset.create`, `person.read`, `face.read`, `user.read`, `userProfileImage.read`.
 
 Tokens und Keys liegen nur im Backend, mit AES-256-GCM verschlüsselt (Schlüssel aus `SESSION_SECRET`). Der Browser erhält nur das Sitzungscookie.
+
+### OAuth mit Authentik
+
+Voraussetzung: Immich ist bereits per OAuth an Authentik angebunden (*Immich → Administration → Einstellungen → OAuth*).
+
+1. In Authentik unter *Anwendungen → Provider* den **OAuth2/OpenID-Provider von Immich** öffnen und bearbeiten.
+2. Bei **Redirect URIs/Origins** eine weitere Adresse hinzufügen, Modus *strict*:
+   `https://druck.example.de/api/auth/oauth/callback`
+   (die vorhandenen Einträge für Immich bleiben).
+3. Speichern. In Fotodruck erscheint der Anmelde-Button automatisch, sobald Immich OAuth meldet (bis zu einer Minute zwischengespeichert).
+
+Die Rückruf-Adresse bildet Fotodruck aus der Adresse, unter der es im Browser aufgerufen wird. Hinter Traefik o. ä. dafür `TRUST_PROXY=true` setzen oder die Adresse fest mit `PUBLIC_URL=https://druck.example.de` vorgeben. Sie muss Zeichen für Zeichen mit dem Eintrag in Authentik übereinstimmen.
+
+Ablauf: Fotodruck → `POST /api/oauth/authorize` bei Immich (mit `state` und PKCE) → Anmeldung bei Authentik → zurück an `/api/auth/oauth/callback` → `POST /api/oauth/callback` bei Immich → Immich-Token für die Sitzung. Abmelden in Fotodruck beendet die Immich-Sitzung (`POST /api/auth/logout`); die Sitzung bei Authentik bleibt bestehen.
+
+Fehlermeldung „Die OAuth-Anmeldung ist fehlgeschlagen“: meist fehlt die Redirect-URI in Authentik oder sie weicht ab (http statt https, anderer Hostname). Authentik zeigt in dem Fall schon vor der Anmeldung „Redirect URI Error“.
 
 ## Drucker einrichten
 
@@ -163,7 +181,7 @@ Release: `git tag v0.1.0 && git push origin v0.1.0`.
 - HEIC/HEIF wird über libheif-js dekodiert (das mitgelieferte libvips kann kein HEVC). Das ist langsamer als JPEG.
 - Passbild-Hilfslinien: Gesichtshöhe 32–36 mm nach Passbildschablone; der Augenbereich folgt ICAO 9303. Vor der Abgabe mit der aktuellen amtlichen Schablone prüfen.
 - Die Vorschau „in echter Größe“ ist maßstäblich, aber Bildschirme zeigen mm nicht physikalisch exakt an.
-- OAuth/SSO-Anmeldung direkt über den Anbieter ist nicht Teil von Version 1 (stattdessen persönlicher API-Key).
+- Die OAuth-Anmeldung läuft über Immich. Getestet ist sie gegen einen nachgebauten Immich- und OAuth-Server, nicht gegen ein echtes Authentik.
 
 ## Lizenz
 
@@ -203,7 +221,7 @@ SESSION_SECRET=$(openssl rand -hex 32) docker compose up -d
 
 Images for amd64 and arm64 are published to `ghcr.io/scazadar/foto-print-tool` and Docker Hub (`<user>/foto-print-tool`; maintainers set the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`). Open <http://localhost:8080> and create the first admin account. To connect Immich, set `IMMICH_URL` (e.g. `http://immich-server:2283`) and join the Immich Docker network (see `docker-compose.yml`). All settings are listed in the [configuration table](#konfiguration) above. Tested against Immich API 3.4.0-rc.0; Immich 2.0.0 or later is supported.
 
-Personal API keys need these permissions: `asset.read`, `asset.view`, `asset.download`, `asset.upload`, `asset.update`, `album.read`, `album.create`, `albumAsset.create`, `person.read`, `face.read`, `user.read`, `userProfileImage.read`.
+If Immich uses OAuth/SSO (Authentik, Keycloak, …), the login page offers an OAuth button: Fotodruck runs Immich's own OAuth flow (like the Immich app), so you only add `https://<fotodruck>/api/auth/oauth/callback` as an extra redirect URI to Immich's client at the provider (details above under „OAuth mit Authentik“). Personal API keys need these permissions: `asset.read`, `asset.view`, `asset.download`, `asset.upload`, `asset.update`, `album.read`, `album.create`, `albumAsset.create`, `person.read`, `face.read`, `user.read`, `userProfileImage.read`.
 
 For browser printing choose **"Scale 100 %" / "Actual size"** and the matching paper in the print dialog. For server printing set `CUPS_URL` to a CUPS server (`ipp://cups:631`) or an IPP printer; a step-by-step example (German) is in [docs/drucken.md](docs/drucken.md) with compose files in [examples/](examples/).
 

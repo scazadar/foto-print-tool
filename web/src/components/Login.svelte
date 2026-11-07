@@ -6,7 +6,9 @@
   import { app, loadSession } from '../lib/state.svelte';
 
   const immichMode = $derived(app.config?.authMode === 'immich');
-  let method = $state<'password' | 'apikey'>('password');
+  const oauth = $derived(immichMode && app.config?.oauth?.enabled ? app.config.oauth : null);
+  const passwordLogin = $derived(app.config?.oauth?.passwordLogin !== false);
+  let method = $state<'password' | 'apikey'>(app.config?.oauth?.passwordLogin === false ? 'apikey' : 'password');
   let register = $state(false);
   let email = $state('');
   let password = $state('');
@@ -38,8 +40,14 @@
   <h1>{register ? t('login.register') : t('login.title')}</h1>
   {#if immichMode}
     <p class="muted">{t('login.immichHint')}</p>
+    {#if oauth}
+      <a class="btn primary oauth" href="/api/auth/oauth/start">{oauth.buttonText}</a>
+      <p class="or muted small">{t('login.or')}</p>
+    {/if}
     <div class="tabs" role="tablist">
-      <button role="tab" class:active={method === 'password'} aria-selected={method === 'password'} onclick={() => (method = 'password')}>{t('login.withPassword')}</button>
+      {#if passwordLogin}
+        <button role="tab" class:active={method === 'password'} aria-selected={method === 'password'} onclick={() => (method = 'password')}>{t('login.withPassword')}</button>
+      {/if}
       <button role="tab" class:active={method === 'apikey'} aria-selected={method === 'apikey'} onclick={() => (method = 'apikey')}>{t('login.withApiKey')}</button>
     </div>
   {/if}
@@ -72,4 +80,6 @@
   .login { max-width: 420px; margin: 2rem auto; }
   input { width: 100%; }
   .linkish { border: 0; background: none; color: var(--accent); }
+  .oauth { width: 100%; margin: 0.4rem 0 0.2rem; }
+  .or { text-align: center; margin: 0.6rem 0; }
 </style>

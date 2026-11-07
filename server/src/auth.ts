@@ -130,6 +130,30 @@ export function publicUser(u: SessionUser) {
   };
 }
 
+/** AUTH_MODE=immich: create or update the user from the Immich profile and start a session. */
+export function signInImmichUser(
+  ctx: AppContext,
+  reply: FastifyReply,
+  cred: ImmichCredential,
+  me: { id: string; email: string; name: string; isAdmin: boolean },
+): void {
+  const id = `immich:${me.id}`;
+  ctx.db
+    .prepare(
+      `INSERT INTO users(id, kind, email, name, is_admin, immich_user_id, created_at) VALUES (?, 'immich', ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET email = excluded.email, name = excluded.name, is_admin = excluded.is_admin`,
+    )
+    .run(id, me.email, me.name || me.email, me.isAdmin ? 1 : 0, me.id, Date.now());
+  startSession(ctx, reply, id, cred);
+}
+
+/** Local or single-user account: store the Immich credential on the user. */
+export function linkImmichAccount(ctx: AppContext, userId: string, cred: ImmichCredential, immichUserId: string): void {
+  ctx.db
+    .prepare('UPDATE users SET immich_cred = ?, immich_cred_type = ?, immich_user_id = ? WHERE id = ?')
+    .run(ctx.box.encrypt(cred.value), cred.type, immichUserId, userId);
+}
+
 /** Log in to Immich with password or API key; returns the credential and Immich profile. */
 async function immichAuthenticate(ctx: AppContext, body: any) {
   const base = ctx.config.immichUrl!;
@@ -228,13 +252,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
       if (err instanceof ImmichError && (err.code === 'immich.unauthorized' || err.code === 'immich.badRequest')) recordFailure(req.ip);
       mapImmichLoginError(err);
     }
-    const { cred, me } = result;
-    const id = `immich:${me.id}`;
-    db.prepare(
-      `INSERT INTO users(id, kind, email, name, is_admin, immich_user_id, created_at) VALUES (?, 'immich', ?, ?, ?, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET email = excluded.email, name = excluded.name, is_admin = excluded.is_admin`,
-    ).run(id, me.email, me.name || me.email, me.isAdmin ? 1 : 0, me.id, Date.now());
-    startSession(ctx, reply, id, cred);
+    signInImmichUser(ctx, reply, result.cred, result.me);
     return { ok: true };
   });
 
@@ -316,12 +334,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     } catch (err) {
       mapImmichLoginError(err);
     }
-    db.prepare('UPDATE users SET immich_cred = ?, immich_cred_type = ?, immich_user_id = ? WHERE id = ?').run(
-      ctx.box.encrypt(result.cred.value),
-      result.cred.type,
-      result.me.id,
-      u.id,
-    );
+    linkImmichAccount(ctx, u.id, result.cred, result.me.id);
     return { ok: true, immichName: result.me.name, immichEmail: result.me.email };
   });
 

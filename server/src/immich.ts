@@ -120,6 +120,26 @@ export class ImmichClient {
     );
   }
 
+  features() {
+    return this.json<{ oauth: boolean; oauthAutoLaunch: boolean; passwordLogin: boolean }>('GET', '/server/features', { timeoutMs: 5000 });
+  }
+
+  serverConfig() {
+    return this.json<{ oauthButtonText?: string }>('GET', '/server/config', { timeoutMs: 5000 });
+  }
+
+  /** Start Immich's OAuth flow (the way the mobile app does it); returns the provider URL. */
+  oauthAuthorize(redirectUri: string, state: string, codeChallenge: string) {
+    return this.json<{ url: string }>('POST', '/oauth/authorize', { json: { redirectUri, state, codeChallenge } });
+  }
+
+  /** Finish the OAuth flow: Immich exchanges the code with the provider and returns an access token. */
+  oauthCallback(url: string, state: string, codeVerifier: string) {
+    return this.json<{ accessToken: string; userId: string; userEmail: string; name: string; isAdmin: boolean }>('POST', '/oauth/callback', {
+      json: { url, state, codeVerifier },
+    });
+  }
+
   logout() {
     return this.json<unknown>('POST', '/auth/logout');
   }

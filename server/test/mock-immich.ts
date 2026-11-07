@@ -86,7 +86,7 @@ export async function createMockImmich() {
 
   app.addHook('onRequest', async (req, reply) => {
     calls.push({ method: req.method, url: req.url, headers: { ...req.headers } });
-    const open = ['/api/server/ping', '/api/server/version', '/api/auth/login'];
+    const open = ['/api/server/ping', '/api/server/version', '/api/auth/login', '/api/server/features', '/api/server/config', '/api/oauth/authorize', '/api/oauth/callback', '/idp/authorize'];
     if (open.includes(req.url.split('?')[0])) return;
     const u = auth(req);
     if (!u) return reply.status(401).send({ message: 'Authentication required' });
@@ -104,6 +104,50 @@ export async function createMockImmich() {
     fileCreatedAt: a.fileCreatedAt,
     localDateTime: a.fileCreatedAt,
     exifInfo: { exifImageWidth: a.width, exifImageHeight: a.height, orientation: a.orientation, dateTimeOriginal: a.dateTimeOriginal, make: 'Test', model: 'Cam' },
+  });
+
+  // OAuth: Immich side plus a tiny stand-in for the provider (Authentik)
+  const oauth = { enabled: true, passwordLogin: true, buttonText: 'Mit Authentik anmelden', userEmail: 'anna@example.org', allowedRedirects: [] as string[] };
+  const codes = new Map<string, { userId: string; challenge: string; redirectUri: string; state: string }>();
+  let base = '';
+  app.get('/api/server/features', async () => ({ oauth: oauth.enabled, oauthAutoLaunch: false, passwordLogin: oauth.passwordLogin }));
+  app.get('/api/server/config', async () => ({ oauthButtonText: oauth.buttonText }));
+  app.post('/api/oauth/authorize', async (req, reply) => {
+    const b = req.body as any;
+    if (!oauth.enabled) return reply.status(400).send({ message: 'OAuth is not enabled' });
+    if (!b?.redirectUri) return reply.status(400).send({ message: 'redirectUri required' });
+    const q = new URLSearchParams({ redirect_uri: b.redirectUri, state: b.state ?? '', code_challenge: b.codeChallenge ?? '', code_challenge_method: 'S256' });
+    return reply.status(201).send({ url: `${base}/idp/authorize?${q}` });
+  });
+  app.get('/idp/authorize', async (req, reply) => {
+    const q = req.query as any;
+    if (oauth.allowedRedirects.length && !oauth.allowedRedirects.includes(q.redirect_uri)) {
+      return reply.status(400).send('Redirect URI Error');
+    }
+    const u = users.find((x) => x.email === oauth.userEmail)!;
+    const code = crypto.randomBytes(8).toString('hex');
+    codes.set(code, { userId: u.id, challenge: q.code_challenge, redirectUri: q.redirect_uri, state: q.state });
+    return reply.redirect(`${q.redirect_uri}?code=${code}&state=${encodeURIComponent(q.state)}`, 302);
+  });
+  app.post('/api/oauth/callback', async (req, reply) => {
+    const b = req.body as any;
+    let url: URL;
+    try {
+      url = new URL(b.url);
+    } catch {
+      return reply.status(400).send({ message: 'bad url' });
+    }
+    const c = codes.get(url.searchParams.get('code') ?? '');
+    if (!c) return reply.status(401).send({ message: 'invalid code' });
+    codes.delete(url.searchParams.get('code')!);
+    if (url.searchParams.get('state') !== b.state || b.state !== c.state) return reply.status(400).send({ message: 'state mismatch' });
+    if (`${url.origin}${url.pathname}` !== c.redirectUri) return reply.status(400).send({ message: 'redirect_uri mismatch' });
+    const challenge = crypto.createHash('sha256').update(String(b.codeVerifier ?? '')).digest('base64url');
+    if (challenge !== c.challenge) return reply.status(400).send({ message: 'PKCE verification failed' });
+    const u = users.find((x) => x.id === c.userId)!;
+    const token = crypto.randomBytes(16).toString('hex');
+    tokens.set(token, u.id);
+    return reply.status(201).send({ accessToken: token, userId: u.id, userEmail: u.email, name: u.name, isAdmin: u.isAdmin });
   });
 
   app.get('/api/server/ping', async () => ({ res: 'pong' }));
@@ -227,7 +271,8 @@ export async function createMockImmich() {
 
   await app.listen({ host: '127.0.0.1', port: Number(process.env.MOCK_IMMICH_PORT ?? 0) });
   const addr = app.server.address() as { port: number };
-  return { app, url: `http://127.0.0.1:${addr.port}`, users, assets, albums, calls, tokens, ids: { a1: a1.id, a2: a2.id, b1: b1.id } };
+  base = `http://127.0.0.1:${addr.port}`;
+  return { app, url: base, users, assets, albums, calls, tokens, oauth, ids: { a1: a1.id, a2: a2.id, b1: b1.id } };
 }
 
 // `tsx test/mock-immich.ts` runs it standalone for development
