@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Fotodruck contributors
+#
+# Beispiel: CUPS als eigenes Compose-Projekt. Fotodruck erreicht es über das
+# gemeinsame Netz "print" als ipp://cups:631. Die Weboberfläche zum Einrichten
+# ist über Traefik erreichbar, nur aus dem Heimnetz und mit Passwort.
+#
+# Vorher einmalig:   docker network create print
+# Starten:           docker compose up -d
+
+services:
+  cups:
+    image: olbat/cupsd
+    container_name: cups
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+    volumes:
+      - cups-config:/etc/cups
+      - ./cupsd.conf:/etc/cups/cupsd.conf:ro
+    networks:
+      - default
+      - print
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.cups.rule=Host(`cups.example.de`)
+      - traefik.http.routers.cups.entrypoints=websecure
+      - traefik.http.routers.cups.tls.certresolver=letsencrypt
+      - traefik.http.routers.cups.middlewares=cups-lan,cups-auth
+      - traefik.http.services.cups.loadbalancer.server.port=631
+      - traefik.http.middlewares.cups-lan.ipallowlist.sourcerange=192.168.0.0/16,10.0.0.0/8
+      # erzeugen mit: htpasswd -nB admin  ($ hier als $$ schreiben)
+      - traefik.http.middlewares.cups-auth.basicauth.users=admin:$$2y$$05$$ERSETZEN
+
+volumes:
+  cups-config:
+
+networks:
+  print:
+    external: true
+  proxy:
+    external: true

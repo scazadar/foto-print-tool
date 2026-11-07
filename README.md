@@ -82,6 +82,8 @@ Tokens und Keys liegen nur im Backend, mit AES-256-GCM verschlüsselt (Schlüsse
 
 **Browser-Druck** braucht keine Einrichtung. Im Druckdialog **„Skalierung 100 %“ bzw. „Tatsächliche Größe“** und das passende Papierformat wählen. Für randlosen Druck die Randlos-Option im Druckdialog bzw. Treiber aktivieren. Ohne Randlos druckt der Drucker mit seinem kleinsten Rand, die Maße bleiben exakt.
 
+Schritt-für-Schritt-Anleitung mit Beispiel (Canon PIXMA TS6200, CUPS als eigenes Compose-Projekt, Traefik): [docs/drucken.md](docs/drucken.md), Beispieldateien unter [examples/](examples/).
+
 **Server-Druck** (Netzwerkdrucker, Druck vom Handy, Stapel): `CUPS_URL` auf einen CUPS-Server (`ipp://cups:631`, die App liest alle Warteschlangen per CUPS-Get-Printers) oder direkt auf einen IPP-fähigen Drucker (`ipp://192.168.1.50/ipp/print`) setzen. Die App fragt Papierformate, Papiertypen, Fächer und Ränder per IPP ab und bietet Randlos nur an, wenn der Drucker Papierformate mit Rand 0 meldet. Gesendet wird ein PDF in exakter Größe mit `print-scaling=none`. Aufträge tragen den Nutzernamen; jeder sieht nur seine eigenen. Administratoren legen unter *Verwaltung* fest, welche Drucker sichtbar sind.
 
 IPP über HTTPS geht auch, etwa wenn CUPS hinter einem Reverse Proxy auf Port 443 liegt: `CUPS_URL=ipps://cups.example.de:443` oder `https://cups.example.de` (ohne Port wird bei `https://` 443 verwendet, bei `ipp://`/`ipps://` 631). Der Proxy darf für diese Adresse keine Anmeldung und keine IP-Sperre verlangen, die den Fotodruck-Container ausschließt; die App sendet keine Zugangsdaten an CUPS. Liegen beide Container im selben Docker-Netz, ist `ipp://cups:631` einfacher und schneller.
@@ -203,7 +205,7 @@ Images for amd64 and arm64 are published to `ghcr.io/scazadar/foto-print-tool` a
 
 Personal API keys need these permissions: `asset.read`, `asset.view`, `asset.download`, `asset.upload`, `asset.update`, `album.read`, `album.create`, `albumAsset.create`, `person.read`, `face.read`, `user.read`, `userProfileImage.read`.
 
-For browser printing choose **"Scale 100 %" / "Actual size"** and the matching paper in the print dialog. For server printing set `CUPS_URL` to a CUPS server (`ipp://cups:631`) or an IPP printer.
+For browser printing choose **"Scale 100 %" / "Actual size"** and the matching paper in the print dialog. For server printing set `CUPS_URL` to a CUPS server (`ipp://cups:631`) or an IPP printer; a step-by-step example (German) is in [docs/drucken.md](docs/drucken.md) with compose files in [examples/](examples/).
 
 ## Licence
 

@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Fotodruck contributors
+#
+# Beispiel: Fotodruck neben Immich, hinter Traefik, mit CUPS aus einem
+# eigenen Compose-Projekt (siehe ../cups/compose.yml und docs/drucken.md).
+#
+# Vorher einmalig:   docker network create print
+# Starten:           docker compose up -d
+
+services:
+  fotodruck:
+    image: ghcr.io/scazadar/foto-print-tool:latest   # oder <docker-hub-nutzer>/foto-print-tool:latest
+    container_name: fotodruck
+    restart: unless-stopped
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET:?in .env setzen, z. B. openssl rand -hex 32}
+      IMMICH_URL: http://immich-server:2283
+      IMMICH_PUBLIC_URL: https://fotos.example.de
+      CUPS_URL: ipp://cups:631          # CUPS über das gemeinsame Netz "print"
+      TRUST_PROXY: "true"               # HTTPS kommt von Traefik
+      UPLOAD_RETENTION_DAYS: 7
+      TZ: Europe/Berlin
+    volumes:
+      - fotodruck-data:/data
+    networks:
+      - default
+      - proxy
+      - immich
+      - print
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.fotodruck.rule=Host(`druck.example.de`)
+      - traefik.http.routers.fotodruck.entrypoints=websecure
+      - traefik.http.routers.fotodruck.tls.certresolver=letsencrypt
+      - traefik.http.services.fotodruck.loadbalancer.server.port=8080
+
+volumes:
+  fotodruck-data:
+
+networks:
+  proxy:
+    external: true          # Netz, in dem Traefik läuft
+  immich:
+    external: true
+    name: immich_default    # Netz des Immich-Stacks (docker network ls)
+  print:
+    external: true          # gemeinsames Netz mit CUPS

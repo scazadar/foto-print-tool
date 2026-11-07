@@ -4,6 +4,10 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Dokumentation
+
+- Anleitung für den Server-Druck mit CUPS am Beispiel Canon PIXMA TS6200 (`docs/drucken.md`) und Beispiel-Compose-Dateien für Fotodruck und CUPS (`examples/`).
+
 ### Hinzugefügt
 
 - Docker-Image zusätzlich auf Docker Hub (wenn die Secrets `DOCKERHUB_USERNAME` und `DOCKERHUB_TOKEN` gesetzt sind), inklusive Beschreibung aus dem README.
