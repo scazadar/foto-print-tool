@@ -8,6 +8,11 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 - Docker-Image zusätzlich auf Docker Hub (wenn die Secrets `DOCKERHUB_USERNAME` und `DOCKERHUB_TOKEN` gesetzt sind), inklusive Beschreibung aus dem README.
 
+### Behoben
+
+- Docker-Build: `npm ci` ohne Install-Skripte (better-sqlite3 wollte ohne Compiler neu bauen).
+- Server-Druck: `CUPS_URL` mit `https://` ohne Port nutzt jetzt Port 443 statt 631; das Attribut `printer-uri` wird immer als `ipp://`/`ipps://` gesendet.
+
 ## [0.1.0] - 2026-11-07
 
 ### Hinzugefügt

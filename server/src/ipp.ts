@@ -277,11 +277,30 @@ export class IppError extends Error {
   }
 }
 
+/** Port of an IPP address: explicit, else 443/80 for https/http and 631 for ipp/ipps. */
+function ippPort(u: URL): string {
+  if (u.port) return u.port;
+  if (u.protocol === 'https:') return '443';
+  if (u.protocol === 'http:') return '80';
+  return '631';
+}
+
+/** HTTP(S) URL the IPP request is posted to. */
 export function httpUrlFor(ippUri: string): string {
   const u = new URL(ippUri);
   const secure = u.protocol === 'ipps:' || u.protocol === 'https:';
-  const port = u.port || '631';
-  return `${secure ? 'https' : 'http'}://${u.hostname}:${port}${u.pathname}${u.search}`;
+  return `${secure ? 'https' : 'http'}://${u.hostname}:${ippPort(u)}${u.pathname}${u.search}`;
+}
+
+/**
+ * Value of the printer-uri attribute: always an ipp:// or ipps:// URI with an
+ * explicit port, also when CUPS_URL is given as http(s)://, e.g. behind a
+ * reverse proxy on port 443.
+ */
+export function printerUriFor(uri: string): string {
+  const u = new URL(uri);
+  const secure = u.protocol === 'ipps:' || u.protocol === 'https:';
+  return `${secure ? 'ipps' : 'ipp'}://${u.hostname}:${ippPort(u)}${u.pathname}${u.search}`;
 }
 
 let requestCounter = 1;
@@ -321,7 +340,7 @@ export async function ippRequest(
   return parsed;
 }
 
-export const uriAttr = (name: string, v: string): TypedAttr => ({ name, tag: TAG.uri, values: [v] });
+export const uriAttr = (name: string, v: string): TypedAttr => ({ name, tag: TAG.uri, values: [name === 'printer-uri' ? printerUriFor(v) : v] });
 export const kw = (name: string, ...v: string[]): TypedAttr => ({ name, tag: TAG.keyword, values: v });
 export const nameAttr = (name: string, v: string): TypedAttr => ({ name, tag: TAG.name, values: [v] });
 export const intAttr = (name: string, v: number): TypedAttr => ({ name, tag: TAG.integer, values: [v] });

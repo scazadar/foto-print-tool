@@ -7,7 +7,7 @@ import sharp from 'sharp';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { defaultEdit } from '../../shared/edit.js';
 import { BUILTIN_FORMATS } from '../../shared/formats.js';
-import { decodeResponse, encodeRequest, OP, TAG, type TypedAttr } from '../src/ipp.js';
+import { decodeResponse, encodeRequest, httpUrlFor, OP, printerUriFor, TAG, type TypedAttr } from '../src/ipp.js';
 import { parseMediaName } from '../src/print.js';
 import { Agent, makeApp } from './helpers.js';
 
@@ -102,6 +102,16 @@ describe('IPP encoding', () => {
     expect(job.copies).toEqual([2]);
     expect(job.finishings).toEqual([3, 4]);
     expect(job['media-col'][0]).toEqual({ 'media-size': { 'x-dimension': 10160 }, 'media-top-margin': 0 });
+  });
+
+  it('maps IPP addresses to HTTP(S), also on port 443 behind a proxy', () => {
+    expect(httpUrlFor('ipp://cups:631/printers/photo')).toBe('http://cups:631/printers/photo');
+    expect(httpUrlFor('ipp://cups/printers/photo')).toBe('http://cups:631/printers/photo');
+    expect(httpUrlFor('ipps://cups.example.de/printers/photo')).toBe('https://cups.example.de:631/printers/photo');
+    expect(httpUrlFor('ipps://cups.example.de:443/printers/photo')).toBe('https://cups.example.de:443/printers/photo');
+    expect(httpUrlFor('https://cups.example.de/printers/photo')).toBe('https://cups.example.de:443/printers/photo');
+    expect(printerUriFor('https://cups.example.de/printers/photo')).toBe('ipps://cups.example.de:443/printers/photo');
+    expect(printerUriFor('ipp://cups:631/printers/photo')).toBe('ipp://cups:631/printers/photo');
   });
 
   it('parses PWG media names', () => {

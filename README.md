@@ -84,6 +84,8 @@ Tokens und Keys liegen nur im Backend, mit AES-256-GCM verschlüsselt (Schlüsse
 
 **Server-Druck** (Netzwerkdrucker, Druck vom Handy, Stapel): `CUPS_URL` auf einen CUPS-Server (`ipp://cups:631`, die App liest alle Warteschlangen per CUPS-Get-Printers) oder direkt auf einen IPP-fähigen Drucker (`ipp://192.168.1.50/ipp/print`) setzen. Die App fragt Papierformate, Papiertypen, Fächer und Ränder per IPP ab und bietet Randlos nur an, wenn der Drucker Papierformate mit Rand 0 meldet. Gesendet wird ein PDF in exakter Größe mit `print-scaling=none`. Aufträge tragen den Nutzernamen; jeder sieht nur seine eigenen. Administratoren legen unter *Verwaltung* fest, welche Drucker sichtbar sind.
 
+IPP über HTTPS geht auch, etwa wenn CUPS hinter einem Reverse Proxy auf Port 443 liegt: `CUPS_URL=ipps://cups.example.de:443` oder `https://cups.example.de` (ohne Port wird bei `https://` 443 verwendet, bei `ipp://`/`ipps://` 631). Der Proxy darf für diese Adresse keine Anmeldung und keine IP-Sperre verlangen, die den Fotodruck-Container ausschließt; die App sendet keine Zugangsdaten an CUPS. Liegen beide Container im selben Docker-Netz, ist `ipp://cups:631` einfacher und schneller.
+
 Beispiel für einen CUPS-Container im selben Compose-Projekt:
 
 ```yaml
