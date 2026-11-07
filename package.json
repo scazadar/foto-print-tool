@@ -1,0 +1,15 @@
+{
+  "name": "fotodruck",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fotos auf Standardformate einpassen, speichern und drucken – optional mit Immich",
+  "license": "AGPL-3.0-or-later",
+  "repository": "github:scazadar/immich-foto-print-tool",
+  "scripts": {
+    "install:all": "cd server && npm ci && cd ../web && npm ci",
+    "build": "cd web && npm run build && cd ../server && npm run build",
+    "test": "cd server && npm test",
+    "lint": "node scripts/check-spdx.mjs && node scripts/check-licenses.mjs --check && cd server && npm run typecheck && cd ../web && npm run check",
+    "start": "cd server && npm start"
+  }
+}

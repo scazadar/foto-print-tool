@@ -1,0 +1,42 @@
+name: Fehlerbericht / Bug report
+description: Etwas funktioniert nicht wie erwartet.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Was ist passiert?
+      description: Was haben Sie getan, was haben Sie erwartet, was ist stattdessen passiert?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zur Reproduktion
+      placeholder: "1. …\n2. …"
+  - type: input
+    id: version
+    attributes:
+      label: Fotodruck-Version
+      description: Steht in der Fußzeile, z. B. v0.1.0 (abc1234)
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Anmeldemodus (AUTH_MODE)
+      options: [local, immich, none]
+  - type: input
+    id: immich
+    attributes:
+      label: Immich-Version (falls verbunden)
+  - type: input
+    id: browser
+    attributes:
+      label: Browser und Gerät
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log-Ausgabe
+      description: "`docker logs fotodruck` – bitte Tokens, Passwörter und E-Mail-Adressen entfernen."
+      render: text
