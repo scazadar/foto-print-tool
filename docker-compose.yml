@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Fotodruck contributors
+#
+# Minimal: `SESSION_SECRET=$(openssl rand -hex 32) docker compose up -d`
+# With Immich: set IMMICH_URL and join the Immich network (see README).
+
+services:
+  fotodruck:
+    image: ghcr.io/scazadar/immich-foto-print-tool:latest
+    build: .
+    container_name: fotodruck
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET is required (openssl rand -hex 32)}
+      # local | immich | none (default: immich when IMMICH_URL is set, otherwise local)
+      AUTH_MODE: ${AUTH_MODE:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      # e.g. http://immich-server:2283 – empty = without Immich
+      IMMICH_URL: ${IMMICH_URL:-}
+      IMMICH_PUBLIC_URL: ${IMMICH_PUBLIC_URL:-}
+      UPLOAD_MAX_MB: ${UPLOAD_MAX_MB:-100}
+      UPLOAD_RETENTION_DAYS: ${UPLOAD_RETENTION_DAYS:-7}
+      # e.g. ipp://cups:631 or ipp://192.168.1.50/ipp/print
+      CUPS_URL: ${CUPS_URL:-}
+      DEFAULT_DPI: ${DEFAULT_DPI:-300}
+      # behind a reverse proxy with HTTPS
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      # link to the source of your (modified) version, AGPL §13
+      SOURCE_URL: ${SOURCE_URL:-}
+    volumes:
+      - fotodruck-data:/data
+    # Uncomment to run next to an existing Immich stack (same Docker network):
+    # networks:
+    #   - immich
+
+volumes:
+  fotodruck-data:
+
+# networks:
+#   immich:
+#     external: true
+#     name: immich_default

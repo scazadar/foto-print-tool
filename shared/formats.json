@@ -1,0 +1,29 @@
+{
+  "$comment": "Built-in photo formats. Width is the short side, height the long side (portrait). Units: cm, mm or in.",
+  "formats": [
+    { "id": "9x13", "name": "9 × 13", "width": 9, "height": 13, "unit": "cm", "group": "classic" },
+    { "id": "10x15", "name": "10 × 15", "width": 10, "height": 15, "unit": "cm", "group": "classic" },
+    { "id": "13x18", "name": "13 × 18", "width": 13, "height": 18, "unit": "cm", "group": "classic" },
+    { "id": "15x20", "name": "15 × 20", "width": 15, "height": 20, "unit": "cm", "group": "classic" },
+    { "id": "15x21", "name": "15 × 21", "width": 15, "height": 21, "unit": "cm", "group": "classic" },
+    { "id": "18x24", "name": "18 × 24", "width": 18, "height": 24, "unit": "cm", "group": "large" },
+    { "id": "20x25", "name": "20 × 25", "width": 20, "height": 25, "unit": "cm", "group": "large" },
+    { "id": "20x30", "name": "20 × 30", "width": 20, "height": 30, "unit": "cm", "group": "large" },
+    { "id": "30x40", "name": "30 × 40", "width": 30, "height": 40, "unit": "cm", "group": "large" },
+    { "id": "30x45", "name": "30 × 45", "width": 30, "height": 45, "unit": "cm", "group": "large" },
+    { "id": "40x60", "name": "40 × 60", "width": 40, "height": 60, "unit": "cm", "group": "large" },
+    { "id": "50x70", "name": "50 × 70", "width": 50, "height": 70, "unit": "cm", "group": "large" },
+    { "id": "10x10", "name": "10 × 10", "width": 10, "height": 10, "unit": "cm", "group": "square" },
+    { "id": "13x13", "name": "13 × 13", "width": 13, "height": 13, "unit": "cm", "group": "square" },
+    { "id": "20x20", "name": "20 × 20", "width": 20, "height": 20, "unit": "cm", "group": "square" },
+    { "id": "30x30", "name": "30 × 30", "width": 30, "height": 30, "unit": "cm", "group": "square" },
+    { "id": "10x30", "name": "10 × 30", "width": 10, "height": 30, "unit": "cm", "group": "panorama" },
+    { "id": "20x60", "name": "20 × 60", "width": 20, "height": 60, "unit": "cm", "group": "panorama" },
+    { "id": "a6", "name": "DIN A6 / Postkarte", "width": 105, "height": 148, "unit": "mm", "group": "din" },
+    { "id": "a5", "name": "DIN A5", "width": 148, "height": 210, "unit": "mm", "group": "din" },
+    { "id": "a4", "name": "DIN A4", "width": 210, "height": 297, "unit": "mm", "group": "din" },
+    { "id": "a3", "name": "DIN A3", "width": 297, "height": 420, "unit": "mm", "group": "din" },
+    { "id": "passport-eu", "name": "Passbild DE/EU", "width": 35, "height": 45, "unit": "mm", "group": "id", "passport": "eu" },
+    { "id": "passport-us", "name": "Passbild US", "width": 2, "height": 2, "unit": "in", "group": "id", "passport": "us" }
+  ]
+}

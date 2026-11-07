@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.scratch/
+*.sqlite
+*.sqlite-*
+/data/
+.env
+coverage/
+test-results/
+playwright-report/
