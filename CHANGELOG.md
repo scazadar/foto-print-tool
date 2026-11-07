@@ -12,10 +12,11 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 ### Dokumentation
 
 - Anleitung für den Server-Druck mit CUPS am Beispiel Canon PIXMA TS6200 (`docs/drucken.md`) und Beispiel-Compose-Dateien für Fotodruck und CUPS (`examples/`).
-- Einrichtung der OAuth-Anmeldung mit Authentik (README).
+- Dokumentation neu gegliedert: kurzes README, Seiten für Installation, Anmeldung (mit OAuth/Authentik), Drucken, Bedienung (mit Screenshots) und Fehlersuche unter `docs/`; Entwicklung und Releases in `CONTRIBUTING.md`.
 
 ### Behoben
 
+- Editor: Der Bereich „Ausgabe“ und das Bogenlayout hatten keinen Rahmen bzw. einen schwarzen gestrichelten Rand.
 - Docker-Build: `npm ci` ohne Install-Skripte (better-sqlite3 wollte ohne Compiler neu bauen).
 - Server-Druck: `CUPS_URL` mit `https://` ohne Port nutzt jetzt Port 443 statt 631; das Attribut `printer-uri` wird immer als `ipp://`/`ipps://` gesendet.
 

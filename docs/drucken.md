@@ -1,8 +1,9 @@
-# Drucken mit CUPS – Beispiel Canon PIXMA TS6200
+# Drucken
 
-Diese Anleitung richtet den Server-Druck ein: Fotodruck schickt Druckaufträge per IPP an einen CUPS-Server, der sie an den Drucker weitergibt. Als Beispiel dient ein **Canon PIXMA TS6200** (Serie TS6250/TS6251) im Heimnetz, CUPS läuft als **eigenes Compose-Projekt**, Fotodruck steht hinter **Traefik**.
+Zwei Wege:
 
-Für den Browser-Druck ist nichts davon nötig, siehe [README](../README.md#drucker-einrichten).
+- **Browser-Druck:** ohne Einrichtung, mit dem Drucker am eigenen Rechner oder Handy. Siehe [Browser-Druck](#browser-druck).
+- **Server-Druck:** Fotodruck schickt den Auftrag per IPP an CUPS oder einen Netzwerkdrucker; gut für Druck vom Handy und viele Bilder. Diese Seite richtet ihn am Beispiel eines **Canon PIXMA TS6200** (Serie TS6250/TS6251) ein: CUPS als eigenes Compose-Projekt, Fotodruck hinter Traefik.
 
 > Ungeprüft: Das Zusammenspiel mit genau diesem Drucker und dem CUPS-Image `olbat/cupsd` ist nicht getestet. Getestet ist der Fotodruck-Teil (Drucker auflisten, Aufträge senden, Status) gegen einen nachgebauten CUPS-Server.
 
@@ -149,6 +150,25 @@ Administratoren legen unter **Verwaltung → Sichtbare Drucker** fest, welche CU
 | „Der Drucker ist offline“ | Drucker eingeschaltet und im WLAN? `docker exec cups lpstat -p` zeigt den Status; angehaltene Warteschlange mit `docker exec cups cupsenable Canon_TS6200` fortsetzen. |
 | Kein Randlos, kein Fotopapier | IPP Everywhere meldet die Optionen des Druckers. Fehlen sie, alternativ den Gutenprint-Treiber testen (*Make* **Canon**, passendes PIXMA-Modell), falls das CUPS-Image ihn enthält. |
 | Bild zu klein oder verschoben | Fotodruck sendet die exakte Größe. Papierformat passend zum eingelegten Papier wählen. |
+
+## Browser-Druck
+
+Ohne CUPS druckt Fotodruck über den Druckdialog des Browsers, mit dem Drucker am eigenen Rechner oder Handy:
+
+1. Im Editor **Ausgabe → Drucken → Browser-Druck**.
+2. **Papier** wählen: „wie Format“ (eine Seite genau so groß wie das Foto) oder z. B. A4; das Foto wird dann mittig in exakter Größe gesetzt.
+3. **Druckdialog öffnen** und dort **Skalierung 100 %** bzw. **Tatsächliche Größe** und das eingelegte Papier wählen.
+4. Für randlosen Druck die Randlos-Option im Druckdialog oder Druckertreiber einschalten. Ohne Randlos druckt der Drucker mit seinem kleinsten Rand, die Maße bleiben exakt.
+
+## Variante: Drucker direkt, ohne CUPS
+
+Viele Netzwerkdrucker (AirPrint, IPP Everywhere, Mopria) nehmen Aufträge direkt an. Dann reicht:
+
+```yaml
+CUPS_URL: ipp://192.168.1.50/ipp/print
+```
+
+Fotodruck erkennt den Unterschied selbst: Zeigt `CUPS_URL` auf einen CUPS-Server (Pfad `/`), liest es alle Warteschlangen aus; sonst gilt die Adresse als ein einzelner Drucker. Mehrere Drucker oder eine Warteschlange gehen nur mit CUPS.
 
 ## Variante: CUPS auf einem anderen Rechner
 

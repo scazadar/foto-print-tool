@@ -425,11 +425,16 @@
 </details>
 
 <style>
+  /* same card look as the other editor sections (their styles are scoped to Editor.svelte) */
+  .out { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 0.6rem 0.8rem; }
+  .out > summary { font-weight: 600; cursor: pointer; margin-bottom: 0.5rem; }
   .out .tabs { margin-bottom: 0.6rem; flex-wrap: wrap; }
   .out .tabs button { padding: 0.5em 0.7em; }
   .seg button { flex: 1; }
   .wide { width: 100%; margin-top: 0.4rem; }
-  .sheet { margin: 0.4rem 0 0.8rem; border-style: dashed; }
+  .sheet { margin: 0.4rem 0 0.8rem; border: 1px dashed var(--line); border-radius: var(--radius); padding: 0.4rem 0.6rem; }
+  .sheet > summary { cursor: pointer; }
+  .sheet[open] > summary { margin-bottom: 0.4rem; }
   .paper { margin: 0.5rem 0; text-align: center; }
   .paper svg { max-width: 100%; max-height: 260px; background: var(--line); padding: 6px; border-radius: 6px; }
   .saved, .jobs { list-style: none; padding: 0; margin: 0.6rem 0; }
