@@ -28,6 +28,8 @@ SESSION_SECRET=$(openssl rand -hex 32) docker compose up -d
 
 Danach <http://localhost:8080> öffnen und im Einrichtungsassistenten das erste Administratorkonto anlegen (oder vorab `ADMIN_EMAIL` und `ADMIN_PASSWORD` setzen). Ohne `IMMICH_URL` läuft die App vollständig ohne Immich, der Immich-Reiter wird nicht angezeigt.
 
+Das Image gibt es für amd64 und arm64 auf der GitHub Container Registry (`ghcr.io/scazadar/foto-print-tool`) und auf Docker Hub (`docker.io/<docker-hub-nutzer>/foto-print-tool`). Für Docker Hub in der `docker-compose.yml` die Zeile `image:` entsprechend ändern.
+
 Den `SESSION_SECRET` dauerhaft aufbewahren (z. B. in einer `.env`-Datei neben der `docker-compose.yml`): Er signiert die Sitzungen und verschlüsselt gespeicherte Immich-Tokens.
 
 ### Neben einem bestehenden Immich-Stack
@@ -133,6 +135,24 @@ Der End-to-End-Test gegen eine echte Immich-Instanz läuft in der CI (`.github/w
 
 Aufbau: `shared/` enthält Formate, Geometrie, Bildkorrekturen und Rendering, die Browser-Vorschau (Canvas) und Server-Ausgabe (`@napi-rs/canvas`) gemeinsam nutzen, damit beide gleich aussehen. `server/` ist das Fastify-Backend, `web/` die Svelte-Oberfläche. Texte stehen in `web/src/locales/de.json`; für weitere Sprachen eine weitere Datei anlegen.
 
+## Images veröffentlichen (für Maintainer)
+
+Die CI baut bei jedem Push auf `main` und bei jedem Tag `v*` ein Multi-Arch-Image (amd64, arm64) und lädt es hoch:
+
+| Ereignis | Tags |
+| --- | --- |
+| Push auf `main` | `edge`, `sha-<commit>` |
+| Tag `v1.2.3` | `1.2.3`, `1.2`, `latest`, `sha-<commit>` |
+
+- **GHCR** (`ghcr.io/scazadar/foto-print-tool`) braucht keine Einrichtung. Neue Pakete sind zunächst privat: einmalig unter *Package settings → Change visibility* auf „Public“ stellen.
+- **Docker Hub** wird zusätzlich bedient, sobald im GitHub-Repo unter *Settings → Secrets and variables → Actions* diese Secrets angelegt sind:
+  - `DOCKERHUB_USERNAME`: Docker-Hub-Nutzer oder -Organisation
+  - `DOCKERHUB_TOKEN`: ein Personal Access Token von Docker Hub (*Account settings → Personal access tokens*) mit dem Recht *Read & Write*
+  
+  Der Image-Name ist `<DOCKERHUB_USERNAME>/foto-print-tool`; abweichend über die Repository-Variable `DOCKERHUB_IMAGE` (z. B. `meine-org/fotodruck`). Das Repository auf Docker Hub wird beim ersten Push angelegt, die Beschreibung wird bei jedem Push auf `main` aus diesem README übernommen. Fehlen die Secrets, überspringt die CI Docker Hub mit einem Hinweis.
+
+Release: `git tag v0.1.0 && git push origin v0.1.0`.
+
 ## Bekannte Grenzen
 
 - RAW-Dateien (CR2, NEF, ARW, DNG) werden beim Upload nicht unterstützt. Aus Immich wird für nicht lesbare Originale das große Vorschaubild verwendet, mit Hinweis auf die geringere Auflösung.
@@ -177,7 +197,7 @@ Licence: [GNU AGPL-3.0-or-later](LICENSE) · No telemetry, no trackers, no exter
 SESSION_SECRET=$(openssl rand -hex 32) docker compose up -d
 ```
 
-Open <http://localhost:8080> and create the first admin account. To connect Immich, set `IMMICH_URL` (e.g. `http://immich-server:2283`) and join the Immich Docker network (see `docker-compose.yml`). All settings are listed in the [configuration table](#konfiguration) above. Tested against Immich API 3.4.0-rc.0; Immich 2.0.0 or later is supported.
+Images for amd64 and arm64 are published to `ghcr.io/scazadar/foto-print-tool` and Docker Hub (`<user>/foto-print-tool`; maintainers set the repository secrets `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN`). Open <http://localhost:8080> and create the first admin account. To connect Immich, set `IMMICH_URL` (e.g. `http://immich-server:2283`) and join the Immich Docker network (see `docker-compose.yml`). All settings are listed in the [configuration table](#konfiguration) above. Tested against Immich API 3.4.0-rc.0; Immich 2.0.0 or later is supported.
 
 Personal API keys need these permissions: `asset.read`, `asset.view`, `asset.download`, `asset.upload`, `asset.update`, `album.read`, `album.create`, `albumAsset.create`, `person.read`, `face.read`, `user.read`, `userProfileImage.read`.
 

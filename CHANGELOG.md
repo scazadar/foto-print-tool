@@ -4,6 +4,10 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- Docker-Image zusätzlich auf Docker Hub (wenn die Secrets `DOCKERHUB_USERNAME` und `DOCKERHUB_TOKEN` gesetzt sind), inklusive Beschreibung aus dem README.
+
 ## [0.1.0] - 2026-11-07
 
 ### Hinzugefügt
