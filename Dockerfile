@@ -6,8 +6,13 @@ FROM node:22-slim AS build
 WORKDIR /app
 COPY server/package.json server/package-lock.json server/
 COPY web/package.json web/package-lock.json web/
-RUN cd server && npm ci --no-audit --no-fund \
- && cd ../web && npm ci --no-audit --no-fund
+# --ignore-scripts: better-sqlite3 ships prebuilt binaries for linux x64/arm64
+# (glibc) in its package but would otherwise try to compile itself with
+# node-gyp, which needs Python and a compiler. No other production package
+# has install scripts; sharp, @napi-rs/canvas and argon2 come as prebuilt
+# optional dependencies.
+RUN cd server && npm ci --no-audit --no-fund --ignore-scripts \
+ && cd ../web && npm ci --no-audit --no-fund --ignore-scripts
 COPY shared/ shared/
 COPY server/ server/
 COPY web/ web/
