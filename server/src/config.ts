@@ -25,7 +25,7 @@ export interface Config {
   webDir: string;
 }
 
-export const OFFICIAL_SOURCE_URL = 'https://github.com/scazadar/immich-foto-print-tool';
+export const OFFICIAL_SOURCE_URL = 'https://github.com/scazadar/foto-print-tool';
 
 function int(name: string, def: number, min: number, max: number, env: NodeJS.ProcessEnv): number {
   const raw = env[name];

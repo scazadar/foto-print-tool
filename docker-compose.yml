@@ -6,7 +6,7 @@
 
 services:
   fotodruck:
-    image: ghcr.io/scazadar/immich-foto-print-tool:latest
+    image: ghcr.io/scazadar/foto-print-tool:latest
     build: .
     container_name: fotodruck
     restart: unless-stopped

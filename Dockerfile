@@ -22,7 +22,7 @@ ARG GIT_COMMIT=unknown
 LABEL org.opencontainers.image.title="Fotodruck" \
       org.opencontainers.image.description="Fotos auf Standardformate einpassen, speichern und drucken – optional mit Immich" \
       org.opencontainers.image.licenses="AGPL-3.0-or-later" \
-      org.opencontainers.image.source="https://github.com/scazadar/immich-foto-print-tool" \
+      org.opencontainers.image.source="https://github.com/scazadar/foto-print-tool" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${GIT_COMMIT}"
 # fonts for captions rendered on the server, tini as init
