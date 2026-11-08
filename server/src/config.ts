@@ -81,7 +81,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     sourceUrl: env.SOURCE_URL?.trim() || OFFICIAL_SOURCE_URL,
     dataDir: path.resolve(env.DATA_DIR || '/data'),
     trustProxy: /^(1|true|yes)$/i.test(env.TRUST_PROXY ?? ''),
-    version: env.APP_VERSION || process.env.npm_package_version || '0.1.0',
+    version: env.APP_VERSION || process.env.npm_package_version || '0.2.0',
     commit: env.GIT_COMMIT || 'unknown',
     webDir: path.resolve(env.WEB_DIR || path.join(process.cwd(), '..', 'web', 'dist')),
   };

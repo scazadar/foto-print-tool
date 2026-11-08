@@ -44,7 +44,7 @@ Voraussetzung: Die Anmeldung bei Immich Ã¼ber Authentik funktioniert (*Immich â†
 ### 1. Fotodruck einstellen
 
 ```yaml
-    image: ghcr.io/scazadar/foto-print-tool:latest   # OAuth ab dem Release nach 0.1.0, bis dahin :edge
+    image: ghcr.io/scazadar/foto-print-tool:latest   # OAuth ab Version 0.2.0
     environment:
       IMMICH_URL: http://immich-server:2283
       PUBLIC_URL: https://druck.example.de           # Adresse von Fotodruck im Browser

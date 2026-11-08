@@ -4,6 +4,8 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-08
+
 ### Hinzugefügt
 
 - Anmeldung über den OAuth/SSO-Anbieter von Immich (z. B. Authentik) mit PKCE, ohne eigenen Client beim Anbieter; ebenso Verbinden eines lokalen Kontos mit Immich per OAuth. Neue optionale Variable `PUBLIC_URL`.
@@ -33,5 +35,6 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 - Mehrbenutzerbetrieb: lokale Konten (Argon2id), Anmeldung über Immich per Passwort oder API-Key, Einzelnutzermodus ohne Login.
 - AGPL-3.0-or-later, Quellcode-Link mit Version und Commit in jeder Seite, Lizenzprüfung in der CI.
 
-[Unreleased]: https://github.com/scazadar/foto-print-tool/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/scazadar/foto-print-tool/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/scazadar/foto-print-tool/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scazadar/foto-print-tool/releases/tag/v0.1.0
