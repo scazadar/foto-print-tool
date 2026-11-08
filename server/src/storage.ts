@@ -26,8 +26,21 @@ export function cacheDir(ctx: AppContext, userId: string): string {
 
 const DAY = 86400_000;
 
+/** Remove a guest with all uploads and settings. */
+export async function deleteGuest(ctx: AppContext, userId: string): Promise<void> {
+  if (!userId.startsWith('guest:')) return;
+  await fs.rm(uploadsDir(ctx, userId), { recursive: true, force: true });
+  await fs.rm(cacheDir(ctx, userId), { recursive: true, force: true });
+  ctx.db.prepare(`DELETE FROM users WHERE id = ? AND kind = 'guest'`).run(userId);
+}
+
 /** Delete expired uploads (UPLOAD_RETENTION_DAYS) and cached originals (24 h). */
-export async function cleanup(ctx: AppContext, now = Date.now()): Promise<{ uploads: number; cache: number }> {
+export async function cleanup(ctx: AppContext, now = Date.now()): Promise<{ uploads: number; cache: number; guests: number }> {
+  // guests whose time is up (their session lasts at most guestSessionHours)
+  const guests = ctx.db
+    .prepare(`SELECT id FROM users WHERE kind = 'guest' AND created_at < ?`)
+    .all(now - ctx.config.guestSessionHours * 3600_000) as { id: string }[];
+  for (const g of guests) await deleteGuest(ctx, g.id);
   let uploads = 0;
   if (ctx.config.uploadRetentionDays > 0) {
     const cutoff = now - ctx.config.uploadRetentionDays * DAY;
@@ -73,5 +86,5 @@ export async function cleanup(ctx: AppContext, now = Date.now()): Promise<{ uplo
       }
     }
   }
-  return { uploads, cache };
+  return { uploads, cache, guests: guests.length };
 }

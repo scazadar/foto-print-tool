@@ -5,7 +5,7 @@
   import { sizeLabel, type PhotoFormat, type Unit } from '../../../shared/formats';
   import { api, ApiError } from '../lib/api';
   import { errorText, t } from '../lib/i18n';
-  import { app, loadSession, reloadFormats, savePrefs, showError, toast } from '../lib/state.svelte';
+  import { app, immichAvailable, loadSession, reloadFormats, savePrefs, showError, toast } from '../lib/state.svelte';
 
   const prefs = $state({ ...app.prefs! });
 
@@ -67,7 +67,7 @@
   let linkError = $state('');
 
   async function loadImmich() {
-    if (!app.config?.immich) return;
+    if (!immichAvailable()) return;
     try {
       immich = await api.get('/api/immich/status');
     } catch {
@@ -114,7 +114,7 @@
 <div class="cols">
   <form class="panel" onsubmit={save}>
     <h2>{t('settings.prefs')}</h2>
-    {#if app.config?.immich}
+    {#if immichAvailable()}
       <label class="field"><span>{t('settings.album')}</span><input bind:value={prefs.immichAlbum} maxlength="200" /></label>
       <p class="hint">{t('settings.albumHint')}</p>
     {/if}
@@ -190,7 +190,7 @@
     </div>
   </section>
 
-  {#if app.config?.immich}
+  {#if immichAvailable()}
     <section class="panel">
       <h2>{t('settings.immich')}</h2>
       {#if app.user?.kind === 'immich'}

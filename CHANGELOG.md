@@ -4,6 +4,10 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- Gastzugang (`GUEST_ACCESS=true`): Anmeldung ohne Konto zum Hochladen, Bearbeiten, Herunterladen und Drucken im Browser, ohne Immich und Netzwerkdrucker. Gäste und ihre Fotos werden beim Abmelden, spätestens nach `GUEST_SESSION_HOURS` gelöscht; Uploads pro Gast (`GUEST_MAX_UPLOADS`) und neue Gastzugänge pro IP sind begrenzt.
+
 ## [0.2.0] - 2026-11-08
 
 ### Hinzugefügt

@@ -173,7 +173,11 @@
     {/if}
   </div>
   <p class="hint">
-    {app.config && app.config.uploadRetentionDays > 0 ? t('upload.retention', { days: app.config.uploadRetentionDays }) : t('upload.retentionNever')}
+    {#if app.user?.kind === 'guest'}
+      {t('upload.retentionGuest', { hours: app.config?.guestSessionHours ?? 24 })}
+    {:else}
+      {app.config && app.config.uploadRetentionDays > 0 ? t('upload.retention', { days: app.config.uploadRetentionDays }) : t('upload.retentionNever')}
+    {/if}
   </p>
   {#if !loading && uploads.length === 0}
     <p class="muted">{t('upload.empty')}</p>

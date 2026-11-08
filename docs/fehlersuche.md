@@ -47,6 +47,8 @@ docker exec fotodruck printenv APP_VERSION GIT_COMMIT
 | „Die Anmeldung ist abgelaufen oder wurde in einem anderen Browser gestartet“ | Länger als 10 Minuten gebraucht, oder Fotodruck unter einer anderen Adresse aufgerufen als `PUBLIC_URL`. Erneut versuchen. |
 | Anmeldung klappt, aber man landet in einem anderen/neuen Immich-Konto | Authentik liefert eine andere E-Mail als das bestehende Immich-Konto; Immich ordnet OAuth-Logins über E-Mail bzw. verknüpfte OAuth-ID zu und legt mit „Auto Register“ neue Konten an. In Immich das Konto mit OAuth verknüpfen. |
 | Ständig abgemeldet | `SESSION_SECRET` ändert sich bei jedem Start (z. B. ohne `.env`), oder die Immich-Sitzung ist abgelaufen. |
+| Kein Knopf „Als Gast fortfahren“ | `GUEST_ACCESS=true` fehlt, oder `AUTH_MODE=none` (dort gibt es keinen Gastzugang). |
+| „Als Gast ist diese Funktion nicht verfügbar“ | Gäste haben absichtlich keinen Zugriff auf Immich und Netzwerkdrucker; mit einem Konto anmelden. |
 | „Zu viele Fehlversuche“ | Nach 10 falschen Anmeldungen ist die IP 15 Minuten gesperrt. Hinter einem Proxy `TRUST_PROXY=true` setzen, sonst teilen sich alle die IP des Proxys. |
 
 ## Fotos und Ausgabe

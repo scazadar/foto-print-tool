@@ -92,6 +92,8 @@ export async function buildApp(config: Config, db: DB, opts: { logger?: boolean 
     testedImmichApi: TESTED_IMMICH_API,
     loggedIn: !!req.user,
     oauth: await immichOAuthInfo(ctx),
+    guestAccess: config.guestAccess && config.authMode !== 'none',
+    guestSessionHours: config.guestSessionHours,
   }));
 
   registerAuthRoutes(app, ctx);

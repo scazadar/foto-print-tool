@@ -98,6 +98,7 @@ export function registerOAuthRoutes(app: FastifyInstance, ctx: AppContext): void
     if (mode === 'link') {
       if (!req.user) return back(reply, { oauth_error: 'auth.required' });
       if (req.user.kind === 'immich') return back(reply, { oauth_error: 'immich.alreadyImmichLogin' });
+      if (req.user.kind === 'guest') return back(reply, { oauth_error: 'auth.guestNotAllowed' });
     }
     const info = await immichOAuthInfo(ctx);
     if (!info.enabled) return back(reply, { oauth_error: 'auth.oauthDisabled' });

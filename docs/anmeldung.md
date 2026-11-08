@@ -7,6 +7,7 @@
 - [OAuth mit Authentik](#oauth-mit-authentik)
 - [Persönlicher API-Key](#persönlicher-api-key)
 - [Eigene Konten (AUTH_MODE=local)](#eigene-konten-auth_modelocal)
+- [Gastzugang](#gastzugang)
 - [Sicherheit](#sicherheit)
 
 ## Anmeldemodi
@@ -18,6 +19,8 @@ Den Modus legt `AUTH_MODE` fest:
 | `immich` | Jeder mit seinem Immich-Konto: OAuth, Immich-Passwort oder API-Key | wenn `IMMICH_URL` gesetzt ist |
 | `local` | Eigene Konten in Fotodruck (E-Mail und Passwort). Jeder kann sein Immich-Konto zusätzlich verbinden. | ohne Immich |
 | `none` | Keine Anmeldung, ein gemeinsamer Nutzer. Nur für einen einzelnen Nutzer im Heimnetz. | – |
+
+Zusätzlich kann ein [Gastzugang](#gastzugang) ohne Konto erlaubt werden (`GUEST_ACCESS=true`).
 
 In jedem Modus sieht jeder Nutzer nur seine eigenen Uploads, Einstellungen und Druckaufträge. Anfragen an Immich laufen immer mit den Rechten des angemeldeten Nutzers, es gibt keinen gemeinsamen Immich-Schlüssel.
 
@@ -93,6 +96,32 @@ Der Schlüssel bleibt nach dem Abmelden in Immich gültig, bis Sie ihn dort lös
 - Das erste Admin-Konto entsteht über den Einrichtungsassistenten oder `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
 - Admins legen unter **Verwaltung** Nutzer an, setzen Passwörter zurück und können die Selbstregistrierung erlauben (Standard: aus).
 - Jeder Nutzer kann unter **Einstellungen → Immich-Konto** sein Immich-Konto verbinden: per OAuth-Button (die Redirect-URI wie oben eintragen), Immich-Passwort oder API-Key.
+
+## Gastzugang
+
+Mit `GUEST_ACCESS=true` steht auf der Anmeldeseite zusätzlich **Als Gast fortfahren**. Das funktioniert in den Modi `immich` und `local`.
+
+| Gäste können | Gäste können nicht |
+| --- | --- |
+| Fotos hochladen, bearbeiten, herunterladen | Immich nutzen (keine Fotos, kein Speichern, kein Verbinden) |
+| im Browser drucken, Bogenlayout | über den Netzwerkdrucker (CUPS) drucken |
+| eigene Formate und Voreinstellungen anlegen | die Verwaltung öffnen |
+
+Die Sperren gelten auf dem Server, nicht nur in der Oberfläche.
+
+- Jeder Gast bekommt ein eigenes, vorübergehendes Konto und sieht nur seine eigenen Fotos.
+- Beim **Abmelden** wird alles sofort gelöscht, sonst spätestens nach `GUEST_SESSION_HOURS` (Standard 24).
+- Pro Gast höchstens `GUEST_MAX_UPLOADS` Fotos (Standard 30), pro IP-Adresse höchstens 20 neue Gastzugänge pro Stunde. Hinter einem Proxy dafür `TRUST_PROXY=true` setzen.
+- Gäste erscheinen nicht in der Benutzerliste der Verwaltung.
+
+```yaml
+    environment:
+      GUEST_ACCESS: "true"
+      GUEST_SESSION_HOURS: 24
+      GUEST_MAX_UPLOADS: 30
+```
+
+Der Gastzugang ist offen für jeden, der Fotodruck erreicht. Öffentlich im Internet daher nur mit Bedacht einschalten, z. B. nur im Heimnetz oder hinter einer Zugangsbeschränkung im Proxy.
 
 ## Sicherheit
 

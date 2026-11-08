@@ -2,7 +2,7 @@
 // Copyright (C) 2026 Fotodruck contributors
 
 import type { FastifyInstance, FastifyReply } from 'fastify';
-import { type AppContext, HttpError, immichFor, requireUser } from './context.js';
+import { type AppContext, HttpError, immichFor, requireNotGuest, requireUser } from './context.js';
 import { ImmichClient, MIN_IMMICH_VERSION, versionAtLeast } from './immich.js';
 import type { ExifSubset } from './images.js';
 
@@ -86,6 +86,7 @@ async function pipeImage(reply: FastifyReply, res: Response): Promise<FastifyRep
 export function registerImmichRoutes(app: FastifyInstance, ctx: AppContext): void {
   app.get('/api/immich/status', async (req) => {
     const user = requireUser(req);
+    requireNotGuest(user);
     const info = await immichServerInfo(ctx);
     let account: { name: string; email: string } | null = null;
     let credentialValid = false;

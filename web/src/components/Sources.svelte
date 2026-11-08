@@ -2,21 +2,21 @@
 <!-- Copyright (C) 2026 Fotodruck contributors -->
 <script lang="ts">
   import { t } from '../lib/i18n';
-  import { app, openEditor } from '../lib/state.svelte';
+  import { app, immichAvailable, openEditor } from '../lib/state.svelte';
   import UploadPanel from './UploadPanel.svelte';
   import ImmichPanel from './ImmichPanel.svelte';
 
   let tab = $state<'upload' | 'immich'>('upload');
 </script>
 
-{#if app.config?.immich}
+{#if immichAvailable()}
   <div class="tabs" role="tablist">
     <button role="tab" class:active={tab === 'upload'} aria-selected={tab === 'upload'} onclick={() => (tab = 'upload')}>{t('sources.upload')}</button>
     <button role="tab" class:active={tab === 'immich'} aria-selected={tab === 'immich'} onclick={() => (tab = 'immich')}>{t('sources.immich')}</button>
   </div>
 {/if}
 
-{#if tab === 'immich' && app.config?.immich}
+{#if tab === 'immich' && immichAvailable()}
   <ImmichPanel />
 {:else}
   <UploadPanel />

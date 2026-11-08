@@ -140,6 +140,9 @@ Vollständiges Beispiel mit Immich, Traefik und CUPS: [`examples/fotodruck/compo
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | optional | – | Erstes Admin-Konto im Modus `local`, statt Einrichtungsassistent. |
 | `TRUST_PROXY` | hinter einem Proxy | `true` | HTTPS und Client-Adresse aus den Proxy-Headern übernehmen. |
 | `PUBLIC_URL` | mit OAuth hinter einem Proxy | `https://druck.example.de` | Öffentliche Adresse von Fotodruck für die OAuth-Rückruf-Adresse. Standard: aus der Anfrage. |
+| `GUEST_ACCESS` | optional | `true` | Anmeldung als Gast ohne Konto erlauben, ohne Immich und Netzwerkdrucker. Standard: aus. Siehe [Anmeldung → Gastzugang](anmeldung.md#gastzugang). |
+| `GUEST_SESSION_HOURS` | mit Gastzugang | `24` | Gäste und ihre Fotos werden nach so vielen Stunden gelöscht (sonst beim Abmelden). |
+| `GUEST_MAX_UPLOADS` | mit Gastzugang | `30` | Höchstzahl an Fotos pro Gast. |
 | `CUPS_URL` | für Server-Druck | `ipp://cups:631` | CUPS-Server oder IPP-Drucker, siehe [Drucken](drucken.md). |
 | `UPLOAD_MAX_MB` | optional | `100` | Maximale Größe pro hochgeladener Datei. |
 | `UPLOAD_RETENTION_DAYS` | optional | `7` | Uploads nach so vielen Tagen löschen. `0` = nie. |

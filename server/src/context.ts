@@ -15,7 +15,7 @@ export interface AppContext {
 
 export interface SessionUser {
   id: string;
-  kind: 'local' | 'immich' | 'none';
+  kind: 'local' | 'immich' | 'none' | 'guest';
   email: string | null;
   name: string;
   isAdmin: boolean;
@@ -51,7 +51,13 @@ export function requireAdmin(req: FastifyRequest): SessionUser {
   return u;
 }
 
+/** Guests may only upload, edit, download and print in the browser. */
+export function requireNotGuest(user: SessionUser): void {
+  if (user.kind === 'guest') throw new HttpError(403, 'auth.guestNotAllowed');
+}
+
 export function immichFor(ctx: AppContext, user: SessionUser): ImmichClient {
+  requireNotGuest(user);
   if (!ctx.config.immichUrl) throw new HttpError(404, 'immich.notConfigured');
   if (!user.immichCred) throw new HttpError(409, 'immich.notLinked');
   return new ImmichClient(ctx.config.immichUrl, user.immichCred);

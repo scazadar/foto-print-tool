@@ -6,7 +6,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import crypto from 'node:crypto';
 import { randomToken, sha256 } from './crypto.js';
 import { getAppSetting, setAppSetting } from './db.js';
-import { type AppContext, HttpError, requireAdmin, requireUser, type SessionUser } from './context.js';
+import { deleteGuest } from './storage.js';
+import { type AppContext, HttpError, requireAdmin, requireNotGuest, requireUser, type SessionUser } from './context.js';
 import { ImmichClient, ImmichError, type ImmichCredential } from './immich.js';
 
 export const SESSION_COOKIE = 'fd_session';
@@ -26,7 +27,7 @@ export function verifyPassword(hash: string, pw: string): Promise<boolean> {
 
 interface UserRow {
   id: string;
-  kind: 'local' | 'immich' | 'none';
+  kind: 'local' | 'immich' | 'none' | 'guest';
   email: string | null;
   name: string;
   password_hash: string | null;
@@ -102,20 +103,30 @@ function toSessionUser(ctx: AppContext, row: UserRow, sid: string | null, sCred:
   };
 }
 
-function startSession(ctx: AppContext, reply: FastifyReply, userId: string, cred: ImmichCredential | null): void {
+function startSession(ctx: AppContext, reply: FastifyReply, userId: string, cred: ImmichCredential | null, maxAgeS = SESSION_DAYS * 86400): void {
   const token = randomToken();
   const now = Date.now();
   ctx.db
     .prepare('INSERT INTO sessions(id, user_id, immich_cred, immich_cred_type, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)')
-    .run(sha256(token), userId, cred ? ctx.box.encrypt(cred.value) : null, cred?.type ?? null, now, now + SESSION_DAYS * 86400_000);
+    .run(sha256(token), userId, cred ? ctx.box.encrypt(cred.value) : null, cred?.type ?? null, now, now + maxAgeS * 1000);
   reply.setCookie(SESSION_COOKIE, token, {
     path: '/',
     httpOnly: true,
     sameSite: 'lax',
     secure: 'auto',
     signed: true,
-    maxAge: SESSION_DAYS * 86400,
+    maxAge: maxAgeS,
   });
+}
+
+/* ---------- guests: at most 20 new guest sessions per IP and hour ---------- */
+const guestStarts = new Map<string, number[]>();
+function checkGuestRate(ip: string): void {
+  const now = Date.now();
+  const list = (guestStarts.get(ip) ?? []).filter((t) => t > now - 3600_000);
+  if (list.length >= 20) throw new HttpError(429, 'auth.tooManyAttempts');
+  list.push(now);
+  guestStarts.set(ip, list);
 }
 
 export function publicUser(u: SessionUser) {
@@ -256,6 +267,17 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
     return { ok: true };
   });
 
+  /** Anonymous guest: temporary account, deleted on logout or after GUEST_SESSION_HOURS. */
+  app.post('/api/auth/guest', async (req, reply) => {
+    if (!config.guestAccess || config.authMode === 'none') throw new HttpError(403, 'auth.guestDisabled');
+    if (setupRequired(ctx)) throw new HttpError(409, 'setup.required');
+    checkGuestRate(req.ip);
+    const id = `guest:${crypto.randomUUID()}`;
+    db.prepare(`INSERT INTO users(id, kind, email, name, is_admin, created_at) VALUES (?, 'guest', NULL, 'Gast', 0, ?)`).run(id, Date.now());
+    startSession(ctx, reply, id, null, config.guestSessionHours * 3600);
+    return { ok: true };
+  });
+
   app.post('/api/auth/register', async (req, reply) => {
     if (config.authMode !== 'local' || !getAppSetting(db, 'allowRegistration', false)) throw new HttpError(403, 'auth.registrationClosed');
     checkThrottle(req.ip);
@@ -283,6 +305,8 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
       }
       db.prepare('DELETE FROM sessions WHERE id = ?').run(u.sessionId);
     }
+    // guests leave nothing behind
+    if (u?.kind === 'guest') await deleteGuest(ctx, u.id);
     reply.clearCookie(SESSION_COOKIE, { path: '/' });
     return { ok: true };
   });
@@ -326,6 +350,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
   /** Link an Immich account to a local (or single-user) account. */
   app.post('/api/account/immich', async (req) => {
     const u = requireUser(req);
+    requireNotGuest(u);
     if (!config.immichUrl) throw new HttpError(404, 'immich.notConfigured');
     if (u.kind === 'immich') throw new HttpError(400, 'immich.alreadyImmichLogin');
     let result;
@@ -354,7 +379,7 @@ export function registerAuthRoutes(app: FastifyInstance, ctx: AppContext): void 
   app.get('/api/admin/users', async (req) => {
     requireAdmin(req);
     return db
-      .prepare('SELECT id, kind, email, name, is_admin AS isAdmin, created_at AS createdAt FROM users ORDER BY created_at')
+      .prepare(`SELECT id, kind, email, name, is_admin AS isAdmin, created_at AS createdAt FROM users WHERE kind != 'guest' ORDER BY created_at`)
       .all()
       .map((r: any) => ({ ...r, isAdmin: !!r.isAdmin }));
   });

@@ -8,7 +8,7 @@
 
   interface U {
     id: string;
-    kind: 'local' | 'immich' | 'none';
+    kind: 'local' | 'immich' | 'none' | 'guest';
     email: string | null;
     name: string;
     isAdmin: boolean;

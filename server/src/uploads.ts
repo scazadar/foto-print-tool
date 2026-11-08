@@ -109,6 +109,10 @@ export function registerUploadRoutes(app: FastifyInstance, ctx: AppContext): voi
 
   app.post('/api/uploads', async (req) => {
     const user = requireUser(req);
+    if (user.kind === 'guest') {
+      const n = (ctx.db.prepare('SELECT COUNT(*) AS n FROM uploads WHERE user_id = ?').get(user.id) as { n: number }).n;
+      if (n >= ctx.config.guestMaxUploads) throw new HttpError(429, 'upload.guestLimit', { max: ctx.config.guestMaxUploads });
+    }
     const file = await req.file({ limits: { fileSize: maxBytes, files: 1 } });
     if (!file) throw new HttpError(400, 'upload.noFile');
     let buf: Buffer;

@@ -9,7 +9,7 @@
   import { renderThumb } from '../lib/preview';
   import { browserPrint, type PrintPage } from '../lib/print';
   import { errorText, t } from '../lib/i18n';
-  import { app, currentFormat, type EditorItem, showError, toast } from '../lib/state.svelte';
+  import { app, currentFormat, type EditorItem, serverPrintAvailable, showError, toast } from '../lib/state.svelte';
 
   type Tab = 'download' | 'immich' | 'print';
   let tab = $state<Tab>('download');
@@ -329,7 +329,7 @@
       </ul>
     {/if}
   {:else}
-    {#if app.config?.print}
+    {#if serverPrintAvailable()}
       <div class="row seg">
         <button aria-pressed={printMode === 'browser'} onclick={() => (printMode = 'browser')}>{t('print.browser')}</button>
         <button aria-pressed={printMode === 'server'} onclick={() => (printMode = 'server')}>{t('print.server')}</button>
@@ -356,7 +356,7 @@
       </figure>
     {/if}
 
-    {#if printMode === 'browser' || !app.config?.print}
+    {#if printMode === 'browser' || !serverPrintAvailable()}
       {#if !sheet.on}
         <label class="field"><span>{t('print.paper')}</span>
           <select bind:value={paper}>

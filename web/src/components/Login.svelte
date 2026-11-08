@@ -17,6 +17,19 @@
   let busy = $state(false);
   let error = $state('');
 
+  async function guest() {
+    busy = true;
+    error = '';
+    try {
+      await api.post('/api/auth/guest');
+      await loadSession();
+    } catch (err) {
+      error = err instanceof ApiError ? errorText(err.code, err.data) : t('errors.generic');
+    } finally {
+      busy = false;
+    }
+  }
+
   async function submit(e: Event) {
     e.preventDefault();
     busy = true;
@@ -70,6 +83,13 @@
     {/if}
     {#if error}<p class="error-text" role="alert">{error}</p>{/if}
     <button class="primary" type="submit" disabled={busy}>{register ? t('login.register') : t('login.submit')}</button>
+    {#if app.config?.guestAccess}
+      <div class="guest">
+        <p class="or muted small">{t('login.or')}</p>
+        <button type="button" class="wide" onclick={guest} disabled={busy}>{t('login.guest')}</button>
+        <p class="hint">{t('login.guestHint', { hours: app.config.guestSessionHours })}</p>
+      </div>
+    {/if}
     {#if app.config?.registration}
       <button type="button" class="linkish" onclick={() => (register = !register)}>{register ? t('login.toLogin') : t('login.register')}</button>
     {/if}
@@ -82,4 +102,5 @@
   .linkish { border: 0; background: none; color: var(--accent); }
   .oauth { width: 100%; margin: 0.4rem 0 0.2rem; }
   .or { text-align: center; margin: 0.6rem 0; }
+  .wide { width: 100%; }
 </style>

@@ -3,7 +3,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import { formatSizeMm } from '../../shared/formats.js';
-import { type AppContext, HttpError, requireUser, type SessionUser } from './context.js';
+import { type AppContext, HttpError, requireNotGuest, requireUser, type SessionUser } from './context.js';
 import { getAppSetting } from './db.js';
 import {
   enumAttr,
@@ -279,7 +279,7 @@ async function submitJob(ctx: AppContext, user: SessionUser, body: any) {
 
 export function registerPrintRoutes(app: FastifyInstance, ctx: AppContext): void {
   app.get('/api/print/printers', async (req) => {
-    requireUser(req);
+    requireNotGuest(requireUser(req));
     if (!ctx.config.cupsUrl) return { configured: false, items: [] };
     try {
       return { configured: true, items: await visiblePrinters(ctx, (req.query as any).refresh === '1') };
@@ -303,6 +303,7 @@ export function registerPrintRoutes(app: FastifyInstance, ctx: AppContext): void
 
   app.post('/api/print/jobs', async (req) => {
     const user = requireUser(req);
+    requireNotGuest(user);
     if (!ctx.config.cupsUrl) throw new HttpError(404, 'print.notConfigured');
     try {
       return await submitJob(ctx, user, req.body);
@@ -314,6 +315,7 @@ export function registerPrintRoutes(app: FastifyInstance, ctx: AppContext): void
 
   app.get('/api/print/jobs', async (req) => {
     const user = requireUser(req);
+    requireNotGuest(user);
     const rows = ctx.db
       .prepare('SELECT * FROM print_jobs WHERE user_id = ? AND created_at > ? ORDER BY created_at DESC LIMIT 50')
       .all(user.id, Date.now() - 7 * 86400_000) as any[];
@@ -348,6 +350,7 @@ export function registerPrintRoutes(app: FastifyInstance, ctx: AppContext): void
 
   app.delete('/api/print/jobs/:id', async (req) => {
     const user = requireUser(req);
+    requireNotGuest(user);
     const row = ctx.db.prepare('SELECT * FROM print_jobs WHERE id = ? AND user_id = ?').get(Number((req.params as any).id), user.id) as any;
     if (!row) throw new HttpError(404, 'notFound');
     if (row.job_id) {

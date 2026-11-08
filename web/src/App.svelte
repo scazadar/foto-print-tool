@@ -48,7 +48,11 @@
     <Setup />
   {:else if !app.user}
     <Login />
-  {:else if app.view === 'editor'}
+  {:else}
+    {#if app.user.kind === 'guest'}
+      <div class="notice small guestbar">{t('guest.notice', { hours: app.config.guestSessionHours })}</div>
+    {/if}
+    {#if app.view === 'editor'}
     <Editor />
   {:else if app.view === 'settings'}
     <Settings />
@@ -56,6 +60,7 @@
     <Admin />
   {:else}
     <Sources />
+  {/if}
   {/if}
 </main>
 <Footer />

@@ -38,7 +38,7 @@ if (config.immichUrl) {
 
 const runCleanup = () =>
   cleanup(ctx)
-    .then((r) => (r.uploads || r.cache ? app.log.info(r, 'cleanup') : undefined))
+    .then((r) => (r.uploads || r.cache || r.guests ? app.log.info(r, 'cleanup') : undefined))
     .catch((err) => app.log.error(err, 'cleanup failed'));
 await runCleanup();
 setInterval(runCleanup, 60 * 60 * 1000).unref();

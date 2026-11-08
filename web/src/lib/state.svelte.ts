@@ -22,11 +22,13 @@ export interface PublicConfig {
   testedImmichApi: string;
   loggedIn: boolean;
   oauth: { enabled: boolean; buttonText: string; passwordLogin: boolean };
+  guestAccess: boolean;
+  guestSessionHours: number;
 }
 
 export interface User {
   id: string;
-  kind: 'local' | 'immich' | 'none';
+  kind: 'local' | 'immich' | 'none' | 'guest';
   email: string | null;
   name: string;
   isAdmin: boolean;
@@ -123,6 +125,19 @@ export async function loadSession(): Promise<void> {
     app.user = null;
   }
   app.ready = true;
+}
+
+/** Guests get no network functions (Immich, network printer). */
+export function isGuest(): boolean {
+  return app.user?.kind === 'guest';
+}
+
+export function immichAvailable(): boolean {
+  return !!app.config?.immich && !isGuest();
+}
+
+export function serverPrintAvailable(): boolean {
+  return !!app.config?.print && !isGuest();
 }
 
 export function allFormats(): PhotoFormat[] {

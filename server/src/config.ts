@@ -14,6 +14,10 @@ export interface Config {
   immichPublicUrl: string | null;
   /** Public base URL of Fotodruck (for the OAuth callback); default: from the request */
   publicUrl: string | null;
+  /** anonymous guest login (upload, edit, download, browser print only) */
+  guestAccess: boolean;
+  guestSessionHours: number;
+  guestMaxUploads: number;
   uploadMaxMb: number;
   uploadRetentionDays: number;
   cupsUrl: string | null;
@@ -73,6 +77,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     immichUrl,
     immichPublicUrl: url('IMMICH_PUBLIC_URL', env, ['http:', 'https:']) ?? immichUrl,
     publicUrl: url('PUBLIC_URL', env, ['http:', 'https:']),
+    guestAccess: /^(1|true|yes)$/i.test(env.GUEST_ACCESS ?? ''),
+    guestSessionHours: int('GUEST_SESSION_HOURS', 24, 1, 720, env),
+    guestMaxUploads: int('GUEST_MAX_UPLOADS', 30, 1, 1000, env),
     uploadMaxMb: int('UPLOAD_MAX_MB', 100, 1, 2048, env),
     uploadRetentionDays: int('UPLOAD_RETENTION_DAYS', 7, 0, 36500, env),
     cupsUrl: url('CUPS_URL', env, ['ipp:', 'ipps:', 'http:', 'https:']),
