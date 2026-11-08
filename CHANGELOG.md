@@ -4,6 +4,8 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-08
+
 ### Hinzugefügt
 
 - Gastzugang (`GUEST_ACCESS=true`): Anmeldung ohne Konto zum Hochladen, Bearbeiten, Herunterladen und Drucken im Browser, ohne Immich und Netzwerkdrucker. Gäste und ihre Fotos werden beim Abmelden, spätestens nach `GUEST_SESSION_HOURS` gelöscht; Uploads pro Gast (`GUEST_MAX_UPLOADS`) und neue Gastzugänge pro IP sind begrenzt.
@@ -39,6 +41,7 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 - Mehrbenutzerbetrieb: lokale Konten (Argon2id), Anmeldung über Immich per Passwort oder API-Key, Einzelnutzermodus ohne Login.
 - AGPL-3.0-or-later, Quellcode-Link mit Version und Commit in jeder Seite, Lizenzprüfung in der CI.
 
-[Unreleased]: https://github.com/scazadar/foto-print-tool/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/scazadar/foto-print-tool/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/scazadar/foto-print-tool/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/scazadar/foto-print-tool/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scazadar/foto-print-tool/releases/tag/v0.1.0

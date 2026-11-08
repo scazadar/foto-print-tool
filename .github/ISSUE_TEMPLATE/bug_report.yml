@@ -18,7 +18,7 @@ body:
     id: version
     attributes:
       label: Fotodruck-Version
-      description: Steht in der Fußzeile, z. B. v0.2.0 (abc1234)
+      description: Steht in der Fußzeile, z. B. v0.3.0 (abc1234)
     validations:
       required: true
   - type: dropdown
