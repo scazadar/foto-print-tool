@@ -58,11 +58,20 @@ jobs:
           node-version: 22
       - name: Start Immich (latest release, without machine learning)
         working-directory: test-e2e
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          # GitHub downloads sometimes fail with 5xx: retry a few times
-          dl() { curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 --connect-timeout 20 -o "$1" "$2"; }
-          dl docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-          dl .env https://github.com/immich-app/immich/releases/latest/download/example.env
+          dl() { curl -fsSL --retry 3 --retry-all-errors --retry-delay 5 --connect-timeout 20 -o "$1" "$2"; }
+          base=https://github.com/immich-app/immich/releases/latest/download
+          if ! { dl docker-compose.yml "$base/docker-compose.yml" && dl .env "$base/example.env"; }; then
+            # GitHub's release-asset host sometimes answers 504 for a while:
+            # take the same files of the latest release straight from the repository
+            tag=$(gh api repos/immich-app/immich/releases/latest --jq .tag_name)
+            echo "::warning::Release download failed, using docker/ files of Immich $tag from the repository"
+            raw="https://raw.githubusercontent.com/immich-app/immich/$tag/docker"
+            dl docker-compose.yml "$raw/docker-compose.yml"
+            dl .env "$raw/example.env"
+          fi
           mkdir -p library postgres
           docker compose up -d immich-server database redis
       - run: npm ci
@@ -77,7 +86,7 @@ jobs:
         working-directory: test-e2e
         # only if Immich got that far; without its compose file docker compose would pick up ours
         run: |
-          if [ -f docker-compose.yml ]; then docker compose -f docker-compose.yml logs immich-server | tail -200; else echo "Immich was not started."; fi
+          if [ -s docker-compose.yml ] && [ -s .env ]; then docker compose -f docker-compose.yml logs immich-server | tail -200; else echo "Immich was not started."; fi
 
   image:
     name: Docker image (amd64, arm64) – GHCR and Docker Hub
