@@ -89,19 +89,13 @@ jobs:
           if [ -s docker-compose.yml ] && [ -s .env ]; then docker compose -f docker-compose.yml logs immich-server | tail -200; else echo "Immich was not started."; fi
 
   image:
-    name: Docker image (amd64, arm64) – GHCR and Docker Hub
+    name: Docker image (amd64, arm64) – GHCR
     runs-on: ubuntu-latest
     needs: check
     if: github.event_name != 'pull_request'
     permissions:
       contents: read
       packages: write
-    env:
-      # Docker Hub is used when the repository secrets DOCKERHUB_USERNAME and
-      # DOCKERHUB_TOKEN exist. The image name defaults to <user>/foto-print-tool
-      # and can be changed with the repository variable DOCKERHUB_IMAGE.
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_IMAGE: ${{ vars.DOCKERHUB_IMAGE || format('{0}/foto-print-tool', secrets.DOCKERHUB_USERNAME) }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3
@@ -111,28 +105,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Log in to Docker Hub
-        if: env.DOCKERHUB_USERNAME != ''
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Image names
-        id: images
-        run: |
-          {
-            echo 'list<<EOF'
-            echo "ghcr.io/${GITHUB_REPOSITORY,,}"
-            if [ -n "$DOCKERHUB_USERNAME" ]; then echo "docker.io/${DOCKERHUB_IMAGE,,}"; fi
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-          if [ -z "$DOCKERHUB_USERNAME" ]; then
-            echo "::notice::Docker Hub skipped: secrets DOCKERHUB_USERNAME / DOCKERHUB_TOKEN are not set."
-          fi
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ steps.images.outputs.list }}
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -154,30 +130,3 @@ jobs:
             GIT_COMMIT=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Docker Hub description from README
-        if: env.DOCKERHUB_USERNAME != '' && github.ref == 'refs/heads/main'
-        uses: peter-evans/dockerhub-description@v4
-        continue-on-error: true
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-          repository: ${{ env.DOCKERHUB_IMAGE }}
-          short-description: Fotos auf Standardformate einpassen, speichern und drucken – optional mit Immich
-          readme-filepath: ./README.md
-
-  release:
-    name: GitHub release
-    runs-on: ubuntu-latest
-    needs: [check, image]
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Release notes from CHANGELOG.md
-        run: |
-          v="${GITHUB_REF_NAME#v}"
-          awk -v v="$v" '$0 ~ "^## \\[" v "\\]" {p=1; next} /^## \[/ {p=0} p' CHANGELOG.md > notes.md
-      - uses: softprops/action-gh-release@v2
-        with:
-          body_path: notes.md

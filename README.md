@@ -19,7 +19,7 @@ SESSION_SECRET=$(openssl rand -hex 32) docker compose up -d
 
 Dann <http://localhost:8080> öffnen und das erste Administratorkonto anlegen. Ohne weitere Einstellungen läuft Fotodruck ohne Immich. Wie man Immich, Traefik, OAuth und Drucker anbindet, steht in der Dokumentation.
 
-Image für amd64 und arm64: `ghcr.io/scazadar/foto-print-tool` (auch auf Docker Hub). Tags: `latest` = letztes Release, `edge` = aktueller Stand von `main`.
+Image für amd64 und arm64: `ghcr.io/scazadar/foto-print-tool`. Tags: `latest` = letztes Release, `edge` = aktueller Stand von `main`.
 
 ## Dokumentation
 

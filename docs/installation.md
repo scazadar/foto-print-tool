@@ -13,9 +13,8 @@ Fotodruck läuft als ein Docker-Container. Diese Seite zeigt drei typische Aufba
 | Image | Tags |
 | --- | --- |
 | `ghcr.io/scazadar/foto-print-tool` | `latest` (letztes Release), `0.4.0`, `0.4` …, `edge` (aktueller Stand von `main`) |
-| Docker Hub: `<docker-hub-nutzer>/foto-print-tool` | dieselben Tags |
 
-Beide Images gibt es für amd64 und arm64 (z. B. Raspberry Pi 4/5).
+Das Image gibt es für amd64 und arm64 (z. B. Raspberry Pi 4/5), nur in der GitHub Container Registry.
 
 ## Variante 1: allein, ohne Immich
 

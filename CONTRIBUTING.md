@@ -91,7 +91,9 @@ Die CI (`.github/workflows/ci.yml`) baut bei jedem Push auf `main` und jedem Tag
 | Ereignis | Tags |
 | --- | --- |
 | Push auf `main` | `edge`, `sha-<commit>` |
-| Tag `v1.2.3` | `1.2.3`, `1.2`, `latest`, `sha-<commit>`, dazu ein GitHub-Release mit dem Abschnitt aus `CHANGELOG.md` |
+| Tag `v1.2.3` | `1.2.3`, `1.2`, `latest`, `sha-<commit>` |
+
+Die Images liegen nur in der GitHub Container Registry: `ghcr.io/scazadar/foto-print-tool`. Ein GitHub-Release legt die CI nicht an; die Änderungen je Version stehen in `CHANGELOG.md`.
 
 Release:
 
@@ -106,10 +108,7 @@ Release:
    git push origin v1.2.3
    ```
 
-**Registries:**
-
-- **GHCR** (`ghcr.io/scazadar/foto-print-tool`) braucht keine Einrichtung. Neue Pakete sind zunächst privat: einmalig unter *Package settings → Change visibility* auf „Public“ stellen.
-- **Docker Hub** zusätzlich, sobald im Repo unter *Settings → Secrets and variables → Actions* die Secrets `DOCKERHUB_USERNAME` und `DOCKERHUB_TOKEN` (Personal Access Token mit *Read & Write*) gesetzt sind. Image-Name `<DOCKERHUB_USERNAME>/foto-print-tool`, abweichend über die Repository-Variable `DOCKERHUB_IMAGE`. Die Beschreibung auf Docker Hub kommt bei jedem Push auf `main` aus `README.md`.
+Die GitHub Container Registry braucht keine Einrichtung. Neue Pakete sind zunächst privat: einmalig unter *Package settings → Change visibility* auf „Public“ stellen.
 
 ---
 

@@ -4,6 +4,11 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Entfernt
+
+- Docker Hub: Images werden nur noch in der GitHub Container Registry (`ghcr.io/scazadar/foto-print-tool`) veröffentlicht. Die Secrets `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` und die Variable `DOCKERHUB_IMAGE` werden nicht mehr gebraucht.
+- Die CI legt bei Tags kein GitHub-Release mehr an; die Änderungen stehen in `CHANGELOG.md`.
+
 ## [0.4.0] - 2026-11-09
 
 ### Behoben
