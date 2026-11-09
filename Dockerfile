@@ -22,7 +22,7 @@ RUN cd web && npm run build \
 
 # ---------- runtime ----------
 FROM node:22-slim
-ARG VERSION=0.3.0
+ARG VERSION=0.4.0
 ARG GIT_COMMIT=unknown
 LABEL org.opencontainers.image.title="Fotodruck" \
       org.opencontainers.image.description="Fotos auf Standardformate einpassen, speichern und drucken – optional mit Immich" \

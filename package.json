@@ -1,6 +1,6 @@
 {
   "name": "fotodruck",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "Fotos auf Standardformate einpassen, speichern und drucken – optional mit Immich",
   "license": "AGPL-3.0-or-later",

@@ -4,6 +4,8 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-09
+
 ### Behoben
 
 - In Immich speichern: Das Standardalbum „Druck“ wurde nur genutzt, wenn die Einstellungen schon einmal gespeichert waren; jetzt immer. Ein vorhandenes Album wird auch bei anderer Groß-/Kleinschreibung gefunden. Lehnt Immich das Hinzufügen zum Album ab, erscheint eine Meldung statt nichts.
@@ -45,7 +47,8 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 - Mehrbenutzerbetrieb: lokale Konten (Argon2id), Anmeldung über Immich per Passwort oder API-Key, Einzelnutzermodus ohne Login.
 - AGPL-3.0-or-later, Quellcode-Link mit Version und Commit in jeder Seite, Lizenzprüfung in der CI.
 
-[Unreleased]: https://github.com/scazadar/foto-print-tool/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/scazadar/foto-print-tool/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/scazadar/foto-print-tool/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/scazadar/foto-print-tool/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/scazadar/foto-print-tool/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/scazadar/foto-print-tool/releases/tag/v0.1.0
