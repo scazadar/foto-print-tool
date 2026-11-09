@@ -4,6 +4,10 @@ Alle nennenswerten Änderungen. Format nach [Keep a Changelog](https://keepachan
 
 ## [Unreleased]
 
+### Behoben
+
+- In Immich speichern: Das Standardalbum „Druck“ wurde nur genutzt, wenn die Einstellungen schon einmal gespeichert waren; jetzt immer. Ein vorhandenes Album wird auch bei anderer Groß-/Kleinschreibung gefunden. Lehnt Immich das Hinzufügen zum Album ab, erscheint eine Meldung statt nichts.
+
 ## [0.3.0] - 2026-11-08
 
 ### Hinzugefügt

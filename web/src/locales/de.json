@@ -202,6 +202,8 @@
   "output.description": "Beschreibung „Druckversion … von …“ setzen",
   "output.saveButton": "Als neue(s) Bild(er) in Immich speichern",
   "output.saved": "{n} Bild(er) in Immich gespeichert.",
+  "output.savedInAlbum": "{n} Bild(er) in Immich gespeichert und dem Album hinzugefügt.",
+  "output.albumFailed": "{n} Bild(er) in Immich gespeichert, aber Immich hat das Hinzufügen zum Album abgelehnt (fehlende Rechte am Album?).",
   "output.openInImmich": "In Immich öffnen",
   "output.duplicate": "bereits vorhanden",
   "output.originalUntouched": "Das Original bleibt unverändert, jede Ausgabe ist eine neue Datei.",

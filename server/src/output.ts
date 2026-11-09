@@ -9,6 +9,7 @@ import { formatFileTag, formatSizeMm, type Orientation, type PhotoFormat, valida
 import { layoutSheet, SHEETS, type SheetItem, type SheetLayout } from '../../shared/sheet.js';
 import { type AppContext, HttpError, immichFor, requireUser, type SessionUser } from './context.js';
 import { getUserSetting } from './db.js';
+import { defaultPrefs, type UserPrefs } from './settings.js';
 import { type ImmichClient } from './immich.js';
 import { encodeJpeg, encodePng, type ExifSubset, type RawImage } from './images.js';
 import { buildPdf, type FrameJob, renderFrame, renderSheetPage } from './render.js';
@@ -247,7 +248,8 @@ function sendFiles(reply: FastifyReply, files: RenderedFile[]) {
 
 async function findOrCreateAlbum(client: ImmichClient, name: string): Promise<string> {
   const albums = await client.albums();
-  const hit = albums.find((a) => a.name === name);
+  const norm = (s: string) => s.trim().toLocaleLowerCase('de');
+  const hit = albums.find((a) => a.name === name) ?? albums.find((a) => norm(a.name) === norm(name));
   if (hit) return hit.id;
   return (await client.createAlbum(name)).id;
 }
@@ -269,7 +271,8 @@ export function registerOutputRoutes(app: FastifyInstance, ctx: AppContext): voi
 
     // album: explicit id, a name (created on demand) or the user's default
     let albumId: string | null = null;
-    const settings = getUserSetting<any>(ctx.db, user.id, 'prefs', {});
+    // same defaults as GET /api/settings: "Druck" unless the user changed it
+    const settings = { ...defaultPrefs(), ...getUserSetting<Partial<UserPrefs>>(ctx.db, user.id, 'prefs', {}) };
     const album = body?.album ?? { mode: 'default' };
     if (album.mode === 'id' && typeof album.id === 'string') albumId = album.id;
     else if (album.mode === 'name' && typeof album.name === 'string' && album.name.trim()) {
@@ -280,6 +283,7 @@ export function registerOutputRoutes(app: FastifyInstance, ctx: AppContext): voi
     const describe = body?.description !== false;
 
     const results: { assetId: string; status: string; name: string; url: string | null }[] = [];
+    let albumError: string | null = null;
     for (let i = 0; i < files.length; i++) {
       const f = files[i];
       const now = new Date().toISOString();
@@ -290,7 +294,15 @@ export function registerOutputRoutes(app: FastifyInstance, ctx: AppContext): voi
         const tag = formatFileTag(it.format, it.orientation).replace(/x/, '×');
         await client.updateAsset(res.id, { description: `Druckversion ${tag} von ${f.baseName}` }).catch(() => undefined);
       }
-      if (albumId) await client.addToAlbum(albumId, [res.id]);
+      if (albumId) {
+        // Immich answers 200 with a per-asset result; "duplicate" means it is already in the album
+        const added = await client.addToAlbum(albumId, [res.id]).catch((err) => [{ success: false, error: (err as Error).message }]);
+        const failed = (added as { success?: boolean; error?: string }[]).find((a) => !a.success && a.error !== 'duplicate');
+        if (failed) {
+          albumError = failed.error ?? 'unknown';
+          req.log.warn({ albumId, error: failed.error }, 'adding to album failed');
+        }
+      }
       results.push({
         assetId: res.id,
         status: res.status,
@@ -298,7 +310,7 @@ export function registerOutputRoutes(app: FastifyInstance, ctx: AppContext): voi
         url: ctx.config.immichPublicUrl ? `${ctx.config.immichPublicUrl}/photos/${res.id}` : null,
       });
     }
-    return { items: results, albumId };
+    return { items: results, albumId, albumError };
   });
 
   /** Sheet planning for the preview in the browser. */

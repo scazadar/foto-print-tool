@@ -173,7 +173,7 @@ export class ImmichClient {
   }
 
   addToAlbum(albumId: string, assetIds: string[]) {
-    return this.json<unknown>('PUT', `/albums/${encodeURIComponent(albumId)}/assets`, { json: { ids: assetIds } });
+    return this.json<{ id: string; success: boolean; error?: string }[]>('PUT', `/albums/${encodeURIComponent(albumId)}/assets`, { json: { ids: assetIds } });
   }
 
   /**

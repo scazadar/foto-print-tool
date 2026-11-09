@@ -110,6 +110,32 @@ describe('AUTH_MODE=immich', () => {
     expect(out.items[0].url).toBe(`https://fotos.example.org/photos/${created.id}`);
   });
 
+  it('uses the default album "Druck" without saved settings and reuses an existing one', async () => {
+    // a fresh user who never saved settings, with an album created by hand ("druck", other case)
+    const ben2 = new Agent(t.app);
+    await ben2.req('POST', '/api/auth/login', { method: 'apikey', apiKey: 'key-ben' });
+    const manual = { id: '11111111-2222-4333-8444-555555555555', ownerId: mock.users[1].id, albumName: 'druck', assetIds: [] as string[], sharedWith: [] };
+    mock.albums.push(manual);
+    const res = await ben2.req('POST', '/api/output/immich', {
+      items: [{ source: { kind: 'immich', id: mock.ids.b1 }, format: f10x15, orientation: 'portrait', edit: defaultEdit() }],
+      album: { mode: 'default' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toMatchObject({ albumId: manual.id, albumError: null });
+    expect(manual.assetIds).toContain(res.json().items[0].assetId);
+    expect(mock.albums.filter((a) => a.ownerId === mock.users[1].id && a.albumName.toLowerCase() === 'druck')).toHaveLength(1);
+  });
+
+  it('reports when Immich refuses to add the picture to the album', async () => {
+    const foreign = mock.albums.find((a) => a.albumName === 'Urlaub')!; // Anna's album
+    const res = await ben.req('POST', '/api/output/immich', {
+      items: [{ source: { kind: 'immich', id: mock.ids.b1 }, format: f10x15, orientation: 'portrait', edit: defaultEdit() }],
+      album: { mode: 'id', id: foreign.id },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().albumError).toBeTruthy();
+  });
+
   it('uploads end up in the account of the signed-in user', async () => {
     const res = await ben.req('POST', '/api/output/immich', {
       items: [{ source: { kind: 'immich', id: mock.ids.b1 }, format: f10x15, orientation: 'portrait', edit: defaultEdit() }],

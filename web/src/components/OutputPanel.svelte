@@ -98,9 +98,14 @@
     saved = [];
     try {
       const album = albumMode === 'id' ? { mode: 'id', id: albumId } : albumMode === 'default' ? { mode: 'default' } : { mode: 'none' };
-      const res = await api.post<{ items: typeof saved }>('/api/output/immich', requestBody({ album, description: describe }));
+      const res = await api.post<{ items: typeof saved; albumId: string | null; albumError: string | null }>(
+        '/api/output/immich',
+        requestBody({ album, description: describe }),
+      );
       saved = res.items;
-      toast(t('output.saved', { n: res.items.length }));
+      if (res.albumError) toast(t('output.albumFailed', { n: res.items.length }), 'error');
+      else toast(t(res.albumId ? 'output.savedInAlbum' : 'output.saved', { n: res.items.length }));
+      albums = []; // a new album may have been created
     } catch (err) {
       showError(err);
     } finally {
