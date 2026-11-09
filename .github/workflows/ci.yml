@@ -59,8 +59,10 @@ jobs:
       - name: Start Immich (latest release, without machine learning)
         working-directory: test-e2e
         run: |
-          curl -fsSL -o docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
-          curl -fsSL -o .env https://github.com/immich-app/immich/releases/latest/download/example.env
+          # GitHub downloads sometimes fail with 5xx: retry a few times
+          dl() { curl -fsSL --retry 5 --retry-all-errors --retry-delay 10 --connect-timeout 20 -o "$1" "$2"; }
+          dl docker-compose.yml https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml
+          dl .env https://github.com/immich-app/immich/releases/latest/download/example.env
           mkdir -p library postgres
           docker compose up -d immich-server database redis
       - run: npm ci
@@ -73,7 +75,9 @@ jobs:
       - name: Immich logs
         if: failure()
         working-directory: test-e2e
-        run: docker compose logs immich-server | tail -200
+        # only if Immich got that far; without its compose file docker compose would pick up ours
+        run: |
+          if [ -f docker-compose.yml ]; then docker compose -f docker-compose.yml logs immich-server | tail -200; else echo "Immich was not started."; fi
 
   image:
     name: Docker image (amd64, arm64) – GHCR and Docker Hub
